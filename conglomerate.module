@@ -1,0 +1,57 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_autoload_info().
+ */
+function conglomerate_autoload_info() {
+  return array(
+    'ConglomerateContentResource' => array(
+      'file' => 'ConglomerateContentResource.php',
+    ),
+    'ConglomerateContentFeedModel' => array(
+      'file' => 'ConglomerateContentFeedModel.php',
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_service_resource().
+ */
+function conglomerate_service_resource() {
+  $res = array(
+    // Solr resource
+    'conglomerate-content' => ServicesOop::definitionFromClass('ConglomerateContentResource'),
+  );
+  return $res;
+}
+
+/**
+ * Implementation of hook_services_contexts().
+ */
+function conglomerate_services_contexts() {
+  return array(
+    'conglomerate' => array(
+      'rest_server' => array(
+        'path' => 'api',
+        'authentication' => array('services_oauth', ),
+        'resources' => array(
+          'conglomerate-content' => array(
+            'alias' => 'content',
+          ),
+          'solr' => array(
+            'alias' => 'search',
+            'index' => array(
+              'enabled' => TRUE,
+              'preprocess' => '_conglomerate_modify_solr_search',
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+function _conglomerate_modify_solr_search($parameters) {
+  
+}

@@ -1,0 +1,10 @@
+; $Id$
+name = Conglomerate
+description = Allows a site to act as a central directory for several subsites
+dependencies[] = services
+dependencies[] = node_resource
+dependencies[] = services_oop
+dependencies[] = services_oauth
+dependencies[] = solr_resource
+dependencies[] = query_builder
+core = 6.x
