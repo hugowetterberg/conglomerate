@@ -20,7 +20,7 @@ function conglomerate_autoload_info() {
  */
 function conglomerate_service_resource() {
   $res = array(
-    // Solr resource
+    // Conglomerate resource
     'conglomerate-content' => ServicesOop::definitionFromClass('ConglomerateContentResource'),
   );
   return $res;
@@ -32,19 +32,22 @@ function conglomerate_service_resource() {
 function conglomerate_services_contexts() {
   return array(
     'conglomerate' => array(
-      'rest_server' => array(
-        'path' => 'api',
-        'authentication' => array('services_oauth', ),
-        'resources' => array(
-          'conglomerate-content' => array(
-            'alias' => 'content',
-          ),
-          'solr' => array(
-            'alias' => 'search',
-            'index' => array(
-              'enabled' => TRUE,
-              'preprocess' => '_conglomerate_modify_solr_search',
-            ),
+      'title' => 'Conglomerate API',
+      'server' => 'rest',
+      'path' => 'api',
+      'authentication' => 'services_oauth',
+      'authentication_settings' => array(
+        'context' => 'conglomerate',
+      ),
+      'resources' => array(
+        'conglomerate-content' => array(
+          'alias' => 'content',
+        ),
+        'solr' => array(
+          'alias' => 'search',
+          'index' => array(
+            'enabled' => TRUE,
+            'preprocess' => '_conglomerate_modify_solr_search',
           ),
         ),
       ),
@@ -52,6 +55,6 @@ function conglomerate_services_contexts() {
   );
 }
 
-function _conglomerate_modify_solr_search($parameters) {
-  
+function _conglomerate_modify_solr_search(&$parameters) {
+  // Do stuff to enforce sensible restrictions
 }
