@@ -106,3 +106,114 @@ function conglomerate_services_contexts() {
 function _conglomerate_modify_solr_search(&$parameters) {
   // Do stuff to enforce sensible restrictions
 }
+
+/**
+ * Test blocks
+ */
+function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
+  switch ($op) {
+    case 'list':
+      $blocks = array(
+        'featured' => array(
+          'info'    => 'TEST Featured',
+          'region'  => 'belowcontent',
+          'weight'  => 0,
+        ),
+        'tags' => array(
+          'info'    => 'TEST Tags',
+          'region'  => 'belowcontent',
+          'weight'  => 10,
+        ),
+        'flickr' => array(
+          'info'    => 'TEST Flickr',
+          'region'  => 'widecontent',
+          'weight'  => 0,
+        ),
+        
+        // Lists
+        'hotels' => array(
+          'info'    => 'TEST Popular Hotels',
+          'region'  => 'lists',
+          'weight'  => 0,
+        ),
+        'see' => array(
+          'info'    => 'TEST Seeworthy',
+          'region'  => 'lists',
+          'weight'  => 10,
+        ),
+        'restaurants' => array(
+          'info'    => 'TEST Restaurant',
+          'region'  => 'lists',
+          'weight'  => 20,
+        ),
+        'blog' => array(
+          'info'    => 'TEST Latest blog',
+          'region'  => 'lists',
+          'weight'  => 30,
+        ),
+        
+        // Footer stuff
+        'logo' => array(
+          'info'    => 'TEST Footer Logo',
+          'region'  => 'footer_one',
+          'weight'  => 0,
+        ),
+        'orgnr' => array(
+          'info'    => 'TEST Footer Org',
+          'region'  => 'footer_two',
+          'weight'  => 0,
+        ),
+        'contact' => array(
+          'info'    => 'TEST Footer Contact',
+          'region'  => 'footer_three',
+          'weight'  => 0,
+        ),
+        'meta' => array(
+          'info'    => 'TEST Footer Meta',
+          'region'  => 'footer_four',
+          'weight'  => 0,
+        ),
+      );
+      
+      return $blocks;
+      
+    // Render blocks
+    case 'view':
+      // Wich block?
+      switch ($delta) {
+        case 'featured':
+          return array('content' => '<img src="hej" alt="" class="test_image" />');
+          
+        case 'tags':
+          return array('content' => 'Random ord text Skane.com Skåne Finland Häst Båt Mos Gurka Glas Fotboll Ystad Vstad Safari Solrosfrön Balja');
+          
+        case 'flickr':
+          return array('content' => '<ul><li><a href="#"><img src="" alt="" /></li><li><a href="#"><img src="" alt="" /></li><li><a href="#"><img src="" alt="" /></li></ul>');
+      
+        case 'hotels':
+          return array('title' => 'Populära hotel', 'content' => '<ol>   <li><a href="#">Grand Hotel</a></li>   <li><a href="#">Örenäs Slott Hotell &amp; konferens</a></li>   <li><a href="#">Hotel Lundia</a></li>   <li><a href="#">First Hotel Jörgen Kock</a></li>   <li><a href="#">Radison SAS Hotel</a></li>   <li><a href="#">Hotel Kärnan</a></li>   <li><a href="#">First Hotel Planetstaden</a></li>   <li><a href="#">Kiviks Hotell</a></li>   <li><a href="#">Hilton Malmö City</a></li>   <li><a href="#">Hotel Plaza</a></li> </ol>');
+          
+        case 'see':
+          return array('title' => 'Populära sevärdheter', 'content' => '<ol>   <li><a href="#">Skånes Djurpark</a></li>   <li><a href="#">Ystad Djurpark</a></li>   <li><a href="#">Tropikariet Helsingborg</a></li>   <li><a href="#">Tosselilla Sommarland</a></li>   <li><a href="#">Botaniska Trädgården</a></li>   <li><a href="#">Skanörs Fiskrögeri</a></li>   <li><a href="#">Kulturbolaget - KB</a></li>   <li><a href="#">Ales Stenar</a></li>   <li><a href="#">Glimmingehus</a></li>   <li><a href="#">Terrariet Reptilcenter</a></li> </ol>');
+          
+        case 'restaurants':
+          return array('title' => 'Populära restauranger', 'content' => '<ol>   <li><a href="#">Lagmark Gastronomi</a></li>   <li><a href="#">Cade le fil du Rasoir</a></li>   <li><a href="#">Smaka</a></li>   <li><a href="#">Bloom In the Park</a></li>   <li><a href="#">Torso Twisted</a></li>   <li><a href="#">Vendel du Sturehof</a></li>   <li><a href="#">Årstiderna</a></li>   <li><a href="#">Mento</a></li>   <li><a href="#">Mrs Brown</a></li>   <li><a href="#">La Roche</a></li> </ol>');
+          
+        case 'blog':
+          return array('title' => 'Nyligen bloggat', 'content' => '<ul>   <li>     <h4><span class="time">11:15</span> Hammenhögs Gästgivaregård</h4>     <p>       Hammenhög     </p>   </li>   <li>     <h4><span class="time">09:07</span> Grå Helgonört</h4>     <p>       Fråga om ettikett     </p>   </li>   <li>     <h4><span class="time">09:00</span> American är nya temat</h4>     <p>       The Lodge     </p>   </li>   <li>     <h4><span class="time">07:05</span> Gratis föreläsning på Zam Zam</h4>     <p>       Zam Zam     </p>   </li>   <li>     <h4><span class="time">06:00</span> Guldkant i tillvaron</h4>     <p>       Torekov hotell     </p>   </li> </ul>');
+      
+        case 'logo':
+          return array('title' => '', 'content' => 'TOURISM IN SKÅNE LOGO ETC');
+          
+        case 'orgnr':
+          return array('title' => 'Tourism in Skåne AB', 'content' => 'Org.nr: 556750-6398');
+          
+        case 'contact':
+          return array('title' => 'Kontakta oss', 'content' => 'Tourism in Skåne AB<br /> Stortorget 9, SE-211 22 Malmö<br /> Tel. +46 (0)40-623 98 00<br /> tourism@skane.com');
+        
+        case 'meta':
+          return array('title' => '', 'content' => '<h3>   <img src="/sites/default/themes/skane/gfx/rss.jpg" alt="RSS" />Prenumerera &mdash; RSS </h3> <ul>   <li><a href="#">Användarvillkor</a></li>   <li><a href="#">PUL Personuppgiftslagen</a></li>   <li><a href="#">Vi använder cookies</a></li> </ul>');
+      }
+      break;
+  }
+}
