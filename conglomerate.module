@@ -26,6 +26,9 @@ function conglomerate_service_resource() {
   return $res;
 }
 
+/**
+ * Implementation of hook_oauth_default_contexts().
+ */
 function conglomerate_oauth_default_contexts() {
   return array(
     'conglomerate' => array(
@@ -103,6 +106,9 @@ function conglomerate_services_contexts() {
   );
 }
 
+/**
+ * Implementation of hook_nodeapi().
+ */
 function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   $update = NULL;
   switch ($op) {
