@@ -173,6 +173,18 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
           'region'  => 'footer_four',
           'weight'  => 0,
         ),
+        
+        // Header stuff
+        'language' => array(
+          'info'    => 'TEST Language select',
+          'region'  => 'header_left',
+          'weight'  => 0,
+        ),
+        'invest' => array(
+          'info'    => 'TEST Skåne links',
+          'region'  => 'header_rights',
+          'weight'  => 0,
+        ),
       );
       
       return $blocks;
@@ -213,6 +225,12 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
         
         case 'meta':
           return array('title' => '', 'content' => '<h3>   <img src="/sites/default/themes/skane/gfx/rss.jpg" alt="RSS" />Prenumerera &mdash; RSS </h3> <ul>   <li><a href="#">Användarvillkor</a></li>   <li><a href="#">PUL Personuppgiftslagen</a></li>   <li><a href="#">Vi använder cookies</a></li> </ul>');
+        
+        case 'language':
+          return array('title' => 'Språk', 'content' => '<ul><li class="active"><a href="#">På svenska</a></li><li><a href="#">In English</a></li><li><a href="#">Je suis un cheval</a></li></ul>');
+      
+        case 'invest':
+          return array('title' => '', 'content' => '<ul><li><a href="#"><strong>event</strong> in skåne</a></li><li><a href="#"><strong>invest</strong> in skåne</a></li></ul>');
       }
       break;
   }
