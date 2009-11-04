@@ -26,6 +26,9 @@ function conglomerate_service_resource() {
   return $res;
 }
 
+/**
+ * Implementation of hook_oauth_default_contexts().
+ */
 function conglomerate_oauth_default_contexts() {
   return array(
     'conglomerate' => array(
@@ -101,6 +104,48 @@ function conglomerate_services_contexts() {
       ),
     ),
   );
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  $update = NULL;
+  switch ($op) {
+    case 'update':
+      $update = array('nid');
+    case 'insert':
+      if (isset($node->conglomerate_source)) {
+        $record = array(
+          'nid' => $node->nid,
+          'sid' => $node->conglomerate_source,
+          'duplicate_of' => $noce->conglomerate_duplicate_of,
+        );
+        drupal_write_record('conglomerate_node_source', $record, $update);
+      }
+    break;
+    case 'load':
+      $info = db_fetch_object(db_query("SELECT sid, duplicate_of FROM {conglomerate_node_source}
+        WHERE nid = %d",
+          array(
+            ':nid' => $node->nid,
+      )));
+      return array(
+        'conglomerate_source' => $info->sid,
+        'conglomerate_duplicate_of' => $info->duplicate_of,
+      );
+    break;
+  }
+}
+
+/**
+ * Implementation of hook_apachesolr_update_index().
+ */
+function conglomerate_apachesolr_update_index(&$doc, $node) {
+  if (isset($node->conglomerate_source)) {
+    $doc->addField('is_conglomerate_source', $node->conglomerate_source);
+    $doc->addField('is_conglomerate_duplicate_of', $node->conglomerate_duplicate_of);
+  }
 }
 
 function _conglomerate_modify_solr_search(&$parameters) {

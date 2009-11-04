@@ -1,0 +1,81 @@
+<?php
+// $Id$
+
+function conglomerate_install() {
+  drupal_install_schema('conglomerate');
+}
+
+function conglomerate_uninstall() {
+  drupal_uninstall_schema('conglomerate');
+}
+
+function conglomerate_schema() {
+  $schema = array();
+
+  $schema['conglomerate_source'] = array(
+    'description' => 'Information about a conglomerate source',
+    'fields' => array(
+      'sid' => array(
+        'description' => t('The primary identifier for the source.'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'oauth_consumer' => array(
+        'description' => t('The OAuth consumer key associated with the source.'),
+        'type'        => 'varchar',
+        'length'      => 32,
+        'not null'    => TRUE,
+      ),
+      'title' => array(
+        'description' => t('The source name.'),
+        'type'        => 'varchar',
+        'length'      => 100,
+        'not null'    => TRUE,
+      ),
+      'url' => array(
+        'description' => t('The source url.'),
+        'type'        => 'varchar',
+        'length'      => 255,
+        'not null'    => TRUE,
+      ),
+    ),
+    'unique keys' => array(
+      'oauth_consumer' => array('oauth_consumer'),
+    ),
+    'primary key' => array('sid'),
+  );
+
+  $schema['conglomerate_node_source'] = array(
+    'description' => 'Information about the source of a conglomerate node',
+    'fields' => array(
+      'nid' => array(
+        'description' => t('The primary identifier for the node.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'sid' => array(
+        'description' => t('The primary identifier for the conglomerate source.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      // Duplicate_of is pretty important, as only nodes with duplicate_of == 0 will 
+      // be listed as primary content.
+      'duplicate_of' => array(
+        'description' => t('The primary identifier for a node that this node is a duplicate of.'),
+        'type' => 'int',
+        'default' => 0,
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('nid'),
+    'index' => array(
+      'duplicate_of' => array('duplicate_of'),
+    ),
+  );
+
+  return $schema;
+}
