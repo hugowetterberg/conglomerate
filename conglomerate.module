@@ -26,6 +26,23 @@ function conglomerate_service_resource() {
   return $res;
 }
 
+function conglomerate_oauth_default_contexts() {
+  return array(
+    'conglomerate' => array(
+      '*' => array(
+        'title' => 'Yes, I want to connect !appname to !sitename',
+        'description' => 'This will allow your site !appname to push content to !sitename',
+        'weight' => -1,
+      ),
+      'read' => array(
+        'title' => 'I want to connect, but just to get stuff from !sitename',
+        'description' => 'This will allow !appname to fetch content from !sitename, but it will not allow any information to be pushed to !sitename.',
+        'weight' => 0,
+      ),
+    )
+  );
+}
+
 /**
  * Implementation of hook_services_contexts().
  */
@@ -33,22 +50,53 @@ function conglomerate_services_contexts() {
   return array(
     'conglomerate' => array(
       'title' => 'Conglomerate API',
-      'server' => 'rest',
+      'server' => 'rest_server',
       'path' => 'api',
       'authentication' => 'services_oauth',
       'authentication_settings' => array(
-        'context' => 'conglomerate',
+        'oauth_context' => 'conglomerate',
       ),
       'resources' => array(
         'conglomerate-content' => array(
           'alias' => 'content',
+          'operations' => array(
+            'create' => array(
+              'enabled' => TRUE,
+              'oauth_credentials' => 'token',
+              'oauth_authorization' => '*',
+            ),
+            'retrieve' => array(
+              'enabled' => TRUE,
+              'oauth_credentials' => 'unsigned_consumer',
+              'oauth_authorization' => 'read',
+            ),
+            'update' => array(
+              'enabled' => TRUE,
+              'oauth_credentials' => 'token',
+              'oauth_authorization' => '*',
+            ),
+            'delete' => array(
+              'enabled' => TRUE,
+              'oauth_credentials' => 'token',
+              'oauth_authorization' => '*',
+            ),
+            'index' => array(
+              'enabled' => TRUE,
+              'oauth_credentials' => 'unsigned_consumer',
+              'oauth_authorization' => 'read',
+            ),
+          ),
         ),
         'solr' => array(
           'alias' => 'search',
-          'index' => array(
-            'enabled' => TRUE,
-            'preprocess' => '_conglomerate_modify_solr_search',
-          ),
+          'operations' => array(
+            'index' => array(
+              'enabled' => TRUE,
+              'preprocess' => '_conglomerate_modify_solr_search',
+              'oauth_credentials' => 'unsigned_consumer',
+              'oauth_authorization' => 'read',
+            ),
+          )
         ),
       ),
     ),
