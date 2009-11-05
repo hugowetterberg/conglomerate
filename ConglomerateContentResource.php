@@ -40,25 +40,97 @@ class ConglomerateContentResource {
    * @Access(callback='ConglomerateContentResource::access', args={'create'}, appendArgs=true)
    */
   public static function create($data) {
-    $nid = NULL;
+    global $user, $language;
+    $oauth_consumer = services_get_server_info('oauth_consumer');
+    $source = conglomerate_source_from_consumer($oauth_consumer);
 
-    try {
-      $form_state = self::executeNodeForm('create', $data);
-    }
-    catch (Exception $e) {
-      return services_error($e->getMessage(), $e->getCode());
-    }
-    
-    // Fetch $nid out of $form_state
-    $nid = $form_state['nid'];
-
-    $result = array(
-      'nid' => $nid,
-      'uri' => services_resource_uri(array('content', $nid)),
-      'url' => url('node/' . $nid, array('absolute' => TRUE))
+    $attr = array(
+      'title' => array('required' => TRUE),
+      'text' => array(
+        'to' => 'body',
+        'required' => TRUE,
+      ),
+      'position' => array(
+        'to' => 'simple_geo_position',
+        'required' => TRUE,
+      ),
+      'tags' => array(
+        'required' => FALSE,
+        'adapt' => 'adaptTags',
+      ),
+      'picture' => array('required' => FALSE),
+      'url' => array('required' => TRUE),
+      'type' => array('required' => TRUE),
+      'language' => array('required' => TRUE),
+      'comments' => array('required' => FALSE),
     );
-    drupal_alter('conglomerate_api_created_result', $result);
-    return (object)$result;
+    switch ($data['type']) {
+      case 'event':
+        $attr['starts'] = array('required' => TRUE);
+        break;
+    }
+
+    $node = (object)array(
+      'created' => time(),
+      'modified' => time(),
+      'uid' => $user->uid,
+      'taxonomy' => array(),
+      'language' => $language->language,
+    );
+
+    // Transfer attributes from data
+    foreach ($attr as $name => $info) {
+      if (isset($text->$name)) {
+        $to = $name;
+        if (!empty($info['to'])) {
+          $to = $info['to'];
+        }
+        if (!isset($info['adapt'])) {
+          $node->$to = $data->$name;
+        }
+        else {
+          call_user_func($node, $info, $data->$name);
+        }
+      }
+      else if ($info['required']) {
+        return services_error("Missing attribute {$name}", 406);
+      }
+    }
+
+    // Add information about the conglomerate source
+    $node->conglomerate_source = $source->sid;
+
+    var_export($node); die;
+
+    node_save($node);
+
+    return (object)array(
+      'nid' => $node->nid,
+      'uri' => services_resource_uri(array('docuwalk-text', $node->nid)),
+      'url' => url('node/' . $node->nid, array('absolute' => TRUE))
+    );
+  }
+
+  /**
+   * Adapt tag information to the expected taxonomy format.
+   */
+  public static function adaptTags(&$node) {
+    $tag_vid = variable_get('conglomerate_tag_vid', 1);
+    if ($tag_vid && isset($node->tags)) {
+      $tags = preg_split('/(?:,?\s+)|(?:[,])/', $node->tags);
+      $node->taxonomy['tags'][$tag_vid] = join($tags, ', ');
+    }
+    unset($node->tags);
+  }
+
+  /**
+   * Format the start date so that it's understood by CCK.
+   */
+  public static function adaptStartTime(&$node) {
+    $node->field_starts = array(array(
+      'value' => date('c', $node->starts)
+    ));
+    unset($node->starts);
   }
 
   /**
@@ -222,98 +294,5 @@ class ConglomerateContentResource {
     }
 
     return $form_state;
-  }
-
-  /**
-   * Adds allowed attributes from the data object to the
-   * node array.
-   *
-   * @param object $data Input data.
-   * @param array &$node Node info.
-   * @param array $allowed An array of allowed values.
-   * @return void
-   */
-  public static function filter($data, &$node, $allowed) {
-    foreach ($allowed as $key => $allowed) {
-      if ($allowed && isset($data->$key)) {
-        $node[$key] = $data->$key;
-      }
-    }
-  }
-
-  /**
-   * Performs all the changes that are needed for drupal_execute to
-   * accept the form state.
-   *
-   * @param string $op 'create' or 'update'
-   * @param object $values The values that should be adapted
-   * @return array The form state values
-   */
-  private static function adaptFormStateValues($op, &$values) {
-    $tag_vocabulary = variable_get('conglomerate_tag_vocabulary', 0);
-
-    $allowed = array(
-      '*' => array(
-        'title' => TRUE, 
-        'body' => TRUE, 
-        'latitude' => TRUE,
-        'longitude' => TRUE,
-        'tags' => TRUE,
-        'author' => TRUE,
-      ),
-      'event' => array(
-        'starts' => TRUE,
-      ),
-      'location' => array(
-      ),
-      'news' => array(
-      ),
-    );
-    // Allow a nid if we are dealing with a update
-    if ($op == 'update') {
-      $allowed['*']['nid'] = TRUE;
-    }
-    // Allow other modules to alter the allowed types and values
-    drupal_alter('conglomerate_api_allowed', $allowed, $op);
-
-    // Check that the content has a valid type
-    if (empty($values->type)) {
-      throw new Exception(t("You must provide a type for the content"), 400);
-    }
-    if (!isset($allowed[$values->type])) {
-      throw new Exception(t("Unknown content type", 400));
-    }
-
-    // Filter the data so that we don't let
-    // anything but the allowed values pass.
-    $node = array('type' => $values->type);
-    self::filter($values, $node, $allowed['*']);
-    self::filter($values, $node, $allowed[$node['type']]);
-
-    // Convert the position to the format that simple geo expects
-    if (!empty($node['latitude']) && !empty($node['longitude'])) {
-      $node['simple_geo_position'] = sprintf('%s %s', $node['latitude'], $node['longitude']);
-    }
-    unset($node['latitude'], $node['longitude']);
-
-    // Adapt tag information to the expected taxonomy format
-    if ($tag_vocabulary && isset($node['tags'])) {
-      $tags = preg_split('/(?:,?\s+)|(?:[,])/', $node['tags']);
-      $node['taxonomy']['tags'][$tag_vocabulary] = join($tags, ', ');
-    }
-    unset($node['tags']);
-
-    // Format the start date so that it's understood by CCK
-    if ($node['type'] == 'event') {
-      if (isset($node['starts'])) {
-        $node['field_starts'] = date('c', $node['starts']);
-        unset($node['starts']);
-      }
-    }
-
-    // Allow other modules to alter the values
-    drupal_alter('conglomerate_api_form_state', $node, $op);
-
-    return $node;
   }
 }

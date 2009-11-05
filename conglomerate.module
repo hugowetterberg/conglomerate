@@ -16,9 +16,9 @@ function conglomerate_autoload_info() {
 }
 
 /**
- * Implementation of hook_service_resource().
+ * Implementation of hook_services_resources().
  */
-function conglomerate_service_resource() {
+function conglomerate_services_resources() {
   $res = array(
     // Conglomerate resource
     'conglomerate-content' => ServicesOop::definitionFromClass('ConglomerateContentResource'),
@@ -136,6 +136,21 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       );
     break;
   }
+}
+
+/**
+ * Loads source information when given a oauth consumer object or key.
+ *
+ * @param mixed $consumer
+ *  A DrupalOAuthConsumer consumer key
+ * @return void
+ */
+function conglomerate_source_from_consumer($consumer) {
+  if (is_object($consumer)) {
+    $consumer = $consumer->key;
+  }
+  return db_fetch_object(db_query("SELECT * FROM {conglomerate_source}
+    WHERE oauth_consumer = '%s'"));
 }
 
 /**
