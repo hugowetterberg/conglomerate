@@ -47,9 +47,9 @@ function conglomerate_oauth_default_contexts() {
 }
 
 /**
- * Implementation of hook_services_contexts().
+ * Implementation of hook_services_endpoints().
  */
-function conglomerate_services_contexts() {
+function conglomerate_services_endpoints() {
   return array(
     'conglomerate' => array(
       'title' => 'Conglomerate API',
