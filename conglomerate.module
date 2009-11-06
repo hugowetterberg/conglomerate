@@ -239,13 +239,10 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
       // Wich block?
       switch ($delta) {
         case 'featured':
-          return array('content' => '<img src="hej" alt="" class="test_image" />');
+          return array('content' => '<img src="' . url(drupal_get_path('theme', 'skane')) . '/gfx/remove_this.jpg" alt="" class="test_image" />');
           
         case 'tags':
           return array('content' => 'Random ord text Skane.com Skåne Finland Häst Båt Mos Gurka Glas Fotboll Ystad Vstad Safari Solrosfrön Balja');
-          
-        case 'flickr':
-          return array('content' => '<ul><li><a href="#"><img src="" alt="" /></li><li><a href="#"><img src="" alt="" /></li><li><a href="#"><img src="" alt="" /></li></ul>');
       
         case 'hotels':
           return array('title' => 'Populära hotel', 'content' => '<ol>   <li><a href="#">Grand Hotel</a></li>   <li><a href="#">Örenäs Slott Hotell &amp; konferens</a></li>   <li><a href="#">Hotel Lundia</a></li>   <li><a href="#">First Hotel Jörgen Kock</a></li>   <li><a href="#">Radison SAS Hotel</a></li>   <li><a href="#">Hotel Kärnan</a></li>   <li><a href="#">First Hotel Planetstaden</a></li>   <li><a href="#">Kiviks Hotell</a></li>   <li><a href="#">Hilton Malmö City</a></li>   <li><a href="#">Hotel Plaza</a></li> </ol>');
