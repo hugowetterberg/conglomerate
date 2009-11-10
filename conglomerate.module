@@ -257,10 +257,57 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
           return array('content' => '<img src="' . url(drupal_get_path('theme', 'skane')) . '/gfx/remove_this.jpg" alt="" class="test_image" />');
           
         case 'tags':
-          return array('content' => 'Random ord text Skane.com Skåne Finland Häst Båt Mos Gurka Glas Fotboll Ystad Vstad Safari Solrosfrön Balja');
+          return array('content' => '<div class="tags"><h3>Etiketter</h3>
+    <a href="#">Lorem</a>
+    <a href="#">ipsum</a>
+    <a href="#">dolor</a>
+    <a href="#">consectetur</a>
+    <a href="#">sit</a>
+    <a href="#">amet</a>
+    <a href="#">adipisicing</a>
+    <a href="#">elit</a>
+    <a href="#">sed</a>
+    <a href="#">do</a>
+    <a href="#">eiusmod</a>
+    <a href="#">tempor</a>
+    <a href="#">incididunt</a>
+    <a href="#">labore</a>
+    <a href="#">Lorem</a>
+    <a href="#">ipsum</a>
+    <a href="#">dolor</a>
+    <a href="#">consectetur</a>
+    <a href="#">sit</a>
+    <a href="#">amet</a>
+    <a href="#">adipisicing</a>
+    <a href="#">elit</a>
+    <a href="#">sed</a>
+    <a href="#">do</a>
+    <a href="#">eiusmod</a>
+    <a href="#">tempor</a>
+    <a href="#">incididunt</a>
+    <a href="#">labore</a>
+    <a href="#">eiusmod</a>
+    <a href="#">tempor</a>
+    <a href="#">incididunt</a>
+    <a href="#">labore</a>
+    <a href="#">Lorem</a>
+    <a href="#">ipsum</a>
+    <a href="#">dolor</a>
+    <a href="#">consectetur</a>
+    <a href="#">sit</a>
+    <a href="#">amet</a>
+    <a href="#">adipisicing</a>
+    <a href="#">elit</a>
+    <a href="#">sed</a>
+    <a href="#">do</a>
+    <a href="#">eiusmod</a>
+    <a href="#">tempor</a>
+    <a href="#">incididunt</a>
+    <a href="#">labore</a>
+</div>');
       
         case 'hotels':
-          return array('title' => 'Populära hotel', 'content' => '<ol>   <li><a href="#">Grand Hotel</a></li>   <li><a href="#">Örenäs Slott Hotell &amp; konferens</a></li>   <li><a href="#">Hotel Lundia</a></li>   <li><a href="#">First Hotel Jörgen Kock</a></li>   <li><a href="#">Radison SAS Hotel</a></li>   <li><a href="#">Hotel Kärnan</a></li>   <li><a href="#">First Hotel Planetstaden</a></li>   <li><a href="#">Kiviks Hotell</a></li>   <li><a href="#">Hilton Malmö City</a></li>   <li><a href="#">Hotel Plaza</a></li> </ol>');
+          return array('title' => 'Populära hotel', 'content' => '<ol>   <li><a href="#">Grand Hotel</a></li>   <li><a href="#">Örenäs Slott Hotell &amp; konferens och en lång mening</a></li>   <li><a href="#">Hotel Lundia</a></li>   <li><a href="#">First Hotel Jörgen Kock</a></li>   <li><a href="#">Radison SAS Hotel</a></li>   <li><a href="#">Hotel Kärnan</a></li>   <li><a href="#">First Hotel Planetstaden</a></li>   <li><a href="#">Kiviks Hotell</a></li>   <li><a href="#">Hilton Malmö City</a></li>   <li><a href="#">Hotel Plaza</a></li> </ol>');
           
         case 'see':
           return array('title' => 'Populära sevärdheter', 'content' => '<ol>   <li><a href="#">Skånes Djurpark</a></li>   <li><a href="#">Ystad Djurpark</a></li>   <li><a href="#">Tropikariet Helsingborg</a></li>   <li><a href="#">Tosselilla Sommarland</a></li>   <li><a href="#">Botaniska Trädgården</a></li>   <li><a href="#">Skanörs Fiskrögeri</a></li>   <li><a href="#">Kulturbolaget - KB</a></li>   <li><a href="#">Ales Stenar</a></li>   <li><a href="#">Glimmingehus</a></li>   <li><a href="#">Terrariet Reptilcenter</a></li> </ol>');
@@ -269,7 +316,28 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
           return array('title' => 'Populära restauranger', 'content' => '<ol>   <li><a href="#">Lagmark Gastronomi</a></li>   <li><a href="#">Cade le fil du Rasoir</a></li>   <li><a href="#">Smaka</a></li>   <li><a href="#">Bloom In the Park</a></li>   <li><a href="#">Torso Twisted</a></li>   <li><a href="#">Vendel du Sturehof</a></li>   <li><a href="#">Årstiderna</a></li>   <li><a href="#">Mento</a></li>   <li><a href="#">Mrs Brown</a></li>   <li><a href="#">La Roche</a></li> </ol>');
           
         case 'blog':
-          return array('title' => 'Nyligen bloggat', 'content' => '<ul>   <li>     <h4><span class="time">11:15</span> Hammenhögs Gästgivaregård</h4>     <p>       Hammenhög     </p>   </li>   <li>     <h4><span class="time">09:07</span> Grå Helgonört</h4>     <p>       Fråga om ettikett     </p>   </li>   <li>     <h4><span class="time">09:00</span> American är nya temat</h4>     <p>       The Lodge     </p>   </li>   <li>     <h4><span class="time">07:05</span> Gratis föreläsning på Zam Zam</h4>     <p>       Zam Zam     </p>   </li>   <li>     <h4><span class="time">06:00</span> Guldkant i tillvaron</h4>     <p>       Torekov hotell     </p>   </li> </ul>');
+          return array('title' => 'Nyligen bloggat', 'content' => '<ul>
+  <li>
+    <span><strong>Hammenhög</strong> skriver:</span>
+    <h4><a href="#">Hammenhögs Gästgivaregård</a></h4>
+  </li>
+  <li>
+    <span><strong>Fråga om etikett</strong> skriver:</span>
+    <h4><a href="#">Grå Helgonört</a></h4>
+  </li>
+  <li>
+    <span><strong>The Lodge</strong> skriver:</span>
+    <h4><a href="#">American är nya temat</a></h4>
+  </li>
+  <li>
+    <span><strong>Zam Zam</strong> skriver:</span>
+    <h4><a href="#">Gratis föreläsning på Zam Zam</a></h4>
+  </li>
+  <li>
+    <span><strong>Torekov hotell</strong> skriver:</span>
+    <h4><a href="#">Guldkant i tillvaron</a></h4>
+  </li>
+</ul>');
       
         case 'logo':
           return array('title' => '', 'content' => 'TOURISM IN SKÅNE LOGO ETC');
@@ -284,7 +352,7 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
           return array('title' => '', 'content' => '<h3>   <img src="/sites/default/themes/skane/gfx/rss.jpg" alt="RSS" />Prenumerera &mdash; RSS </h3> <ul>   <li><a href="#">Användarvillkor</a></li>   <li><a href="#">PUL Personuppgiftslagen</a></li>   <li><a href="#">Vi använder cookies</a></li> </ul>');
         
         case 'language':
-          return array('title' => 'Språk', 'content' => '<ul><li class="active"><a href="#">På svenska</a></li><li><a href="#">In English</a></li><li><a href="#">Je suis un cheval</a></li></ul>');
+          return array('title' => 'Språk', 'content' => '<ul><li class="active"><a href="#">På svenska</a></li><li><a href="#">In English</a></li><li><a href="#">vers le français</a></li><li><a href="#">Español</a></li><li><a href="#">Tyska</a></li><li><a href="#">Esperanto</a></li></ul>');
       
         case 'invest':
           return array('title' => '', 'content' => '<ul><li><a href="#"><strong>event</strong> in skåne</a></li><li><a href="#"><strong>invest</strong> in skåne</a></li></ul>');
