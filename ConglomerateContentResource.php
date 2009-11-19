@@ -41,96 +41,14 @@ class ConglomerateContentResource {
    */
   public static function create($data) {
     global $user, $language;
-    $oauth_consumer = services_get_server_info('oauth_consumer');
-    $source = conglomerate_source_from_consumer($oauth_consumer);
-
-    $attr = array(
-      'title' => array('required' => TRUE),
-      'text' => array(
-        'to' => 'body',
-        'required' => TRUE,
-      ),
-      'position' => array(
-        'to' => 'simple_geo_position',
-        'required' => TRUE,
-      ),
-      'tags' => array(
-        'required' => FALSE,
-        'adapt' => 'adaptTags',
-      ),
-      'picture' => array('required' => FALSE),
-      'url' => array('required' => TRUE),
-      'type' => array('required' => TRUE),
-      'language' => array('required' => TRUE),
-      'comments' => array('required' => FALSE),
-    );
-    switch ($data['type']) {
-      case 'event':
-        $attr['starts'] = array('required' => TRUE);
-        break;
-    }
-
     $node = (object)array(
       'created' => time(),
-      'modified' => time(),
+      'changed' => time(),
       'uid' => $user->uid,
       'taxonomy' => array(),
       'language' => $language->language,
     );
-
-    // Transfer attributes from data
-    foreach ($attr as $name => $info) {
-      if (isset($text->$name)) {
-        $to = $name;
-        if (!empty($info['to'])) {
-          $to = $info['to'];
-        }
-        if (!isset($info['adapt'])) {
-          $node->$to = $data->$name;
-        }
-        else {
-          call_user_func($node, $info, $data->$name);
-        }
-      }
-      else if ($info['required']) {
-        return services_error("Missing attribute {$name}", 406);
-      }
-    }
-
-    // Add information about the conglomerate source
-    $node->conglomerate_source = $source->sid;
-
-    var_export($node); die;
-
-    node_save($node);
-
-    return (object)array(
-      'nid' => $node->nid,
-      'uri' => services_resource_uri(array('docuwalk-text', $node->nid)),
-      'url' => url('node/' . $node->nid, array('absolute' => TRUE))
-    );
-  }
-
-  /**
-   * Adapt tag information to the expected taxonomy format.
-   */
-  public static function adaptTags(&$node) {
-    $tag_vid = variable_get('conglomerate_tag_vid', 1);
-    if ($tag_vid && isset($node->tags)) {
-      $tags = preg_split('/(?:,?\s+)|(?:[,])/', $node->tags);
-      $node->taxonomy['tags'][$tag_vid] = join($tags, ', ');
-    }
-    unset($node->tags);
-  }
-
-  /**
-   * Format the start date so that it's understood by CCK.
-   */
-  public static function adaptStartTime(&$node) {
-    $node->field_starts = array(array(
-      'value' => date('c', $node->starts)
-    ));
-    unset($node->starts);
+    return self::nodeWrite($node, $data);
   }
 
   /**
@@ -162,22 +80,9 @@ class ConglomerateContentResource {
    * @Access(callback='ConglomerateContentResource::access', args={'update'}, appendArgs=true)
    */
   public static function update($nid, $data) {
-    $data->nid = $nid;
-
-    try {
-      $form_state = self::executeNodeForm('update', $data);
-    }
-    catch (Exception $e) {
-      return services_error($e->getMessage(), $e->getCode());
-    }
-
-    $result = array(
-      'nid' => $nid,
-      'uri' => services_resource_uri(array('content', $nid)),
-      'url' => url('node/' . $nid, array('absolute' => TRUE))
-    );
-    drupal_alter('conglomerate_api_updated_result', $result);
-    return $result;
+    $node = node_load($nid);
+    $node->changed = time();
+    return self::nodeWrite($node, $data);
   }
 
   /**
@@ -231,8 +136,6 @@ class ConglomerateContentResource {
     list($sql, $params) = $builder->query($fields, $parameters);
     $res = db_query_range($sql, $params, $page*20, 20);
 
-    error_log(var_export(db_query_debug($sql, $params), TRUE));
-
     $nodes = array();
     while ($node = db_fetch_object($res)) {
       $node->url = url('node/' . $node->nid, array(
@@ -245,54 +148,124 @@ class ConglomerateContentResource {
   }
 
   /**
-   * Executes either a insert or update using the node form
+   * Helper function that maps incoming data to the proper node attributes
    *
-   * @param string $op 'create' or 'update'
-   * @param string $data The data the we got from the caller
-   * @return array Form state after submission
+   * @param object $node 
+   * @param object $data 
+   * @return object
    */
-  private static function executeNodeForm($op, $data) {
-    // Setup form_state
-    $values = self::adaptFormStateValues($op, $data);
+  private static function nodeWrite($node, $data) {
+    $oauth_consumer = services_get_server_info('oauth_consumer');
+    $source = conglomerate_source_from_consumer($oauth_consumer);
+    $attr = array(
+      'title' => array('required' => TRUE),
+      'text' => array(
+        'to' => 'body',
+        'required' => TRUE,
+      ),
+      'position' => array(
+        'to' => 'simple_geo_position',
+        'required' => TRUE,
+      ),
+      'tags' => array(
+        'required' => FALSE,
+        'adapt' => 'adaptTags',
+      ),
+      'picture' => array(
+        'required' => FALSE,
+        'adapt' => 'adaptPicture',
+      ),
+      'url' => array(
+        'required' => TRUE,
+        'adapt' => 'adaptUrl',
+      ),
+      'type' => array('required' => TRUE),
+      'language' => array('required' => TRUE),
+      'comments' => array('required' => FALSE),
+    );
+    switch ($data->type) {
+      case 'event':
+        $attr['starts'] = array('required' => TRUE);
+        break;
+    }
 
-    // $node should be null when inserting new content, but we need a
-    // valid node object with a matching type when updating.
-    $node = NULL;
-    if ($op == 'update') {
-      if (empty($values['nid'])) {
-        throw new Exception(t("No id was given for the content that should be updated"), 406);
+    // Transfer attributes from data
+    foreach ($attr as $name => $info) {
+      if (isset($data->$name)) {
+        $to = $name;
+        if (!empty($info['to'])) {
+          $to = $info['to'];
+        }
+        $node->$to = $data->$name;
+
+        if (isset($info['adapt'])) {
+          call_user_func('ConglomerateContentResource::' . $info['adapt'], $node);
+        }
       }
-      else {
-        $node = node_load($nid);
-
-        // Check that we got a node
-        if (!$node || !$node->nid) {
-          throw new Exception(t("There is no content with the id !nid", array(
-            '!nid' => $values['!nid'],
-          )), 404);
-        }
-
-        // Check that the node has the correct type
-        if ($node->type != $values['type']) {
-          throw new Exception(t('The nid of the submitted content didn\'t match a !type', array(
-            '!type' => $type,
-          )), 406);
-        }
+      else if ($info['required']) {
+        return services_error("Missing attribute {$name}", 406);
       }
     }
 
-    // Load the required includes for drupal_execute
-    module_load_include('inc', 'node', 'node.pages');
-    $form_state = array();
-    $form_state['values'] = $values;
-    $form_state['values']['op'] = t('Save');
-    $ret = drupal_execute($type . '_node_form', $form_state, $node);
+    // Add information about the conglomerate source
+    $node->conglomerate_source = $source->sid;
 
-    // TODO: Send information about which fields failed
-    if ($errors = form_get_errors()) {
-      throw new Exception(implode("\n", $errors), 400);
+    node_save($node);
+
+    return (object)array(
+      'nid' => $node->nid,
+      'uri' => services_resource_uri(array('conglomerate-content', $node->nid)),
+      'url' => url('node/' . $node->nid, array('absolute' => TRUE))
+    );
+  }
+
+  public static function adaptUrl(&$node) {
+    $node->field_page_url = array(array(
+      'url' => $node->url,
+    ));
+    unset($node->url);
+  }
+
+  /**
+   * Adapt tag information to the expected taxonomy format.
+   */
+  public static function adaptTags(&$node) {
+    $tag_vid = variable_get('conglomerate_tag_vid', 1);
+    if ($tag_vid && isset($node->tags)) {
+      $tags = preg_split('/(?:,?\s+)|(?:[,])/', $node->tags);
+      $node->taxonomy['tags'][$tag_vid] = join($tags, ', ');
     }
+    unset($node->tags);
+  }
 
-    return $form_state;
+  /**
+   * Format the start date so that it's understood by CCK.
+   */
+  public static function adaptStartTime(&$node) {
+    $node->field_starts = array(array(
+      'value' => date('c', $node->starts)
+    ));
+    unset($node->starts);
+  }
+
+  /**
+   * Format the picture url so that it's understood by CCK.
+   */
+  public static function adaptPicture(&$node) {
+    $node->field_image_url = array(array(
+      'url' => $node->picture,
+    ));
+    unset($node->picture);
+  }
+
+  public static function access($op='view', $args=array()) {
+    global $user;
+    if ($op !== 'create') {
+      $node = node_load($args[0]);
+    }
+    else {
+      $node = $args[0];
+    }
+    return node_access($op, $node);
   }
 }
