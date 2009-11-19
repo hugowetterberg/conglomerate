@@ -96,6 +96,7 @@ class ConglomerateContentResource {
    */
   public static function delete($nid) {
     node_delete($nid);
+    return TRUE;
   }
 
   /**
