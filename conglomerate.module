@@ -15,6 +15,37 @@ function conglomerate_autoload_info() {
   );
 }
 
+function conglomerate_menu() {
+  $menu = array();
+
+  $menu['admin/settings/conglomerate'] = array(
+    'title'   => 'Conglomerate settings',
+    'description' => 'Administer the settings for the conglomerate server',
+    'file'  => 'includes/admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_conglomerate_hostmaster_settings'),
+    'access arguments' => array('adminster conglomerate server'),
+    'type'    => MENU_NORMAL_ITEM,
+  );
+
+  $menu['admin/settings/conglomerate/index'] = array(
+    'title' => 'Hostmaster settings',
+    'type'    => MENU_DEFAULT_LOCAL_TASK,
+    'weight'  => -10,
+  );
+
+  $menu['admin/settings/conglomerate/authorization'] = array(
+    'title' => 'Hostmaster authorization',
+    'file'  => 'includes/admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_conglomerate_hostmaster_authorization'),
+    'access arguments' => array('adminster conglomerate server'),
+    'type'    => MENU_LOCAL_TASK,
+  );
+
+  return $menu;
+}
+
 /**
  * Implementation of hook_services_resources().
  */
