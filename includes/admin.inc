@@ -1,6 +1,30 @@
 <?php
 // $Id$
 
+function _conglomerate_settings($form_state) {
+  $form = array();
+
+  $form['conglomerate_domain'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Domain'),
+    '#description' => t('The root domain for the subsites.'),
+    '#size' => 40,
+    '#maxlength' => 255,
+    '#default_value' => variable_get('conglomerate_domain', ''),
+  );
+
+  $form['conglomerate_reserved_subdomains'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Reserved subdomains'),
+    '#description' => t('Enter all reserved subdomains on separate lines'),
+    '#cols' => 60,
+    '#rows' => 5,
+    '#default_value' => variable_get('conglomerate_reserved_subdomains', ''),
+  );
+
+  return system_settings_form($form);
+}
+
 function _conglomerate_hostmaster_settings($form_state) {
   $consumer_key = variable_get('conglomerate_hostmaster_consumer_key', '');
 

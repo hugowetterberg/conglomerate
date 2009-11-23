@@ -15,23 +15,47 @@ function conglomerate_autoload_info() {
   );
 }
 
+function conglomerate_perm() {
+  return array('adminster conglomerate server', 'conglomerate register subsite');
+}
+
 function conglomerate_menu() {
   $menu = array();
+
+  $menu['register-site'] = array(
+    'title' => 'Register site',
+    'file'  => 'includes/site.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_conglomerate_site_register'),
+    'access arguments' => array('conglomerate register subsite'),
+    'type'    => MENU_NORMAL_ITEM,
+  );
 
   $menu['admin/settings/conglomerate'] = array(
     'title'   => 'Conglomerate settings',
     'description' => 'Administer the settings for the conglomerate server',
     'file'  => 'includes/admin.inc',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('_conglomerate_hostmaster_settings'),
+    'page arguments' => array('_conglomerate_settings'),
     'access arguments' => array('adminster conglomerate server'),
     'type'    => MENU_NORMAL_ITEM,
   );
 
   $menu['admin/settings/conglomerate/index'] = array(
-    'title' => 'Hostmaster settings',
+    'title' => 'Settings',
     'type'    => MENU_DEFAULT_LOCAL_TASK,
     'weight'  => -10,
+  );
+
+  $menu['admin/settings/conglomerate/hostmaster'] = array(
+    'title'   => 'Hostmaster settings',
+    'description' => 'Administer the settings for the conglomerate hostmaster',
+    'file'  => 'includes/admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_conglomerate_hostmaster_settings'),
+    'access arguments' => array('adminster conglomerate server'),
+    'type'    => MENU_LOCAL_TASK,
+    'weight' => 9,
   );
 
   $menu['admin/settings/conglomerate/authorization'] = array(
@@ -41,6 +65,7 @@ function conglomerate_menu() {
     'page arguments' => array('_conglomerate_hostmaster_authorization'),
     'access arguments' => array('adminster conglomerate server'),
     'type'    => MENU_LOCAL_TASK,
+    'weight' => 10,
   );
 
   return $menu;

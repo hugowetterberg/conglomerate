@@ -2,6 +2,8 @@
 name = Conglomerate
 description = Allows a site to act as a central directory for several subsites
 dependencies[] = services
+dependencies[] = rest_server
+dependencies[] = rest_client
 dependencies[] = node_resource
 dependencies[] = services_oop
 dependencies[] = services_oauth
