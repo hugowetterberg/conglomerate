@@ -114,7 +114,7 @@ function _conglomerate_site_register_submit($form, $form_state) {
   $consumer = DrupalOAuthConsumerToken::load($consumer_key);
   $access_token = reset($tokens['access']);
 
-  $auth = new RestClientOAuth($consumer, $access_token);
+  $auth = new RestClientOAuth($consumer, $access_token, new OAuthSignatureMethod_HMAC('sha1'));
   $client = new RestClient($auth, new RestClientBaseFormatter(RestClientBaseFormatter::FORMAT_PHP));
 
   $response = (array)$client->post(sprintf('%s/conglomeratehostmaster/api/subsite', $consumer->provider_url), array(
