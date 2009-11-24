@@ -160,10 +160,18 @@ function _conglomerate_hostmaster_authorization($form_state) {
     $consumer = DrupalOAuthConsumerToken::load($consumer_key);
     $tokens = _conglomerate_oauth_tokens();
     if (!empty($tokens['access'])) {
+      $token = reset($tokens['access']);
       $form['have_access'] = array(
         '#type' => 'item',
         '#title' => t('Access granted'),
-        '#value' => t('We have a authorized access token.'),
+        '#value' => t('We have a authorized access token: @token.', array(
+          '@token' => $token->key,
+        )),
+      );
+      $form['get_request_token'] = array(
+        '#type' => 'submit',
+        '#value' => t('Restart authorization process'),
+        '#description' => t('Click here to get a new request token and restart the authorization process.'),
       );
     }
     else if (!empty($tokens['request'])) {
