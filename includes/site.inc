@@ -135,7 +135,8 @@ function _conglomerate_site_register_submit($form, $form_state) {
   $source = array(
     'nid' => $response['nid'],
     'oauth_consumer' => $consumer->key,
-    'title' => $domain,
+    'title' => $values['title'],
+    'description' => $values['description'],
     'url' => 'http://' . $domain,
   );
   drupal_write_record('conglomerate_source', $source);
