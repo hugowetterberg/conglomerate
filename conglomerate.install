@@ -21,6 +21,12 @@ function conglomerate_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'nid' => array(
+        'description' => t('The primary identifier for the node on the hostmaster server.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
       'oauth_consumer' => array(
         'description' => t('The OAuth consumer key associated with the source.'),
         'type'        => 'varchar',
@@ -42,6 +48,8 @@ function conglomerate_schema() {
     ),
     'unique keys' => array(
       'oauth_consumer' => array('oauth_consumer'),
+      'url' => array('url'),
+      'nid' => array('nid'),
     ),
     'primary key' => array('sid'),
   );
@@ -61,7 +69,7 @@ function conglomerate_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-      // Duplicate_of is pretty important, as only nodes with duplicate_of == 0 will 
+      // Duplicate_of is pretty important, as only nodes with duplicate_of == 0 will
       // be listed as primary content.
       'duplicate_of' => array(
         'description' => t('The primary identifier for a node that this node is a duplicate of.'),
@@ -78,4 +86,19 @@ function conglomerate_schema() {
   );
 
   return $schema;
+}
+
+function conglomerate_update_6001() {
+  $ret = array();
+
+  db_add_field($ret, 'conglomerate_source', 'nid', array(
+    'description' => t('The primary identifier for the node on the hostmaster server.'),
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+  ));
+
+  db_add_unique_key($ret, 'conglomerate_source', 'url', array('url'));
+
+  return $ret;
 }
