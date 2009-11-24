@@ -13,6 +13,15 @@ function _conglomerate_site_register($form_state) {
     '#maxlength' => 20,
   );
 
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name'),
+    '#required' => TRUE,
+    '#description' => t('The name of your site'),
+    '#size' => 30,
+    '#maxlength' => 100,
+  );
+
   $form['description'] = array(
     '#type' => 'textarea',
     '#title' => t('Description'),
@@ -89,6 +98,7 @@ function _conglomerate_site_register_submit($form, $form_state) {
   $server_url = url('', array('absolute' => TRUE));
   // Create a config array that will be passed to the subsite
   $config = array(
+    'title' => $values['title'],
     'user' => array(
       'name' => $user->name,
       'email' => $user->mail,
