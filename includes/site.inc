@@ -42,11 +42,22 @@ function _conglomerate_site_register_validate($form, $form_state) {
       $reserved = split("\n", $reserved);
       foreach ($reserved as $r) {
         if (drupal_strtolower($r) == $subdomain) {
-          form_set_error('subdomain', t('The subdomain "!reserved" is reserved and may not be registered.', array(
-            '!reserved' => $subdomain,
+          form_set_error('subdomain', t('The subdomain "!subdomain" is reserved and may not be registered.', array(
+            '!subdomain' => $subdomain,
           )));
         }
       }
+    }
+
+    // Check that the subdomain hasn't been taken
+    $url = sprintf('http://%s.%s', $values['subdomain'], variable_get('conglomerate_domain', ''));
+    $exists = db_result(db_query("SELECT url FROM {conglomerate_source} WHERE url = '%s'", array(
+      ':url' => $url,
+    )));
+    if (!empty($url)) {
+      form_set_error('subdomain', t('The subdomain "!subdomain" has already been registered.', array(
+        '!subdomain' => $subdomain,
+      )));
     }
   }
 }
