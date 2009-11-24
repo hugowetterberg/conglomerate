@@ -117,7 +117,7 @@ function _conglomerate_site_register_submit($form, $form_state) {
   $auth = new RestClientOAuth($consumer, $access_token, new OAuthSignatureMethod_HMAC('sha1'));
   $client = new RestClient($auth, new RestClientBaseFormatter(RestClientBaseFormatter::FORMAT_PHP));
 
-  $response = (array)$client->post(sprintf('%s/conglomeratehostmaster/api/subsite', $consumer->provider_url), array(
+  $response = (array)$client->post(sprintf('%s/conglomeratehostmaster/api/subsite.php', $consumer->provider_url), array(
     'domain' => $domain,
     'config' => $config,
   ));
