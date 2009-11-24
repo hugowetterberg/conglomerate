@@ -30,6 +30,27 @@ function _conglomerate_site_register($form_state) {
   return $form;
 }
 
+function _conglomerate_site_register_validate($form, $form_state) {
+  $subdomain = $form_state['values']['subdomain'];
+
+  if (!preg_match('/^[a-z]$/', $subdomain)) {
+    form_set_error('subdomain', t('The subdomain name may only contain lowercase characters from a to z.'));
+  }
+  else {
+    $reserved = drupal_strtolower(variable_get('conglomerate_reserved_subdomains', ''));
+    if (!empty($reserved)) {
+      $reserved = split("\n", $reserved);
+      foreach ($reserved as $r) {
+        if (drupal_strtolower($r) == $subdomain) {
+          form_set_error('subdomain', t('The subdomain "!reserved" is reserved and may not be registered.', array(
+            '!reserved' => $subdomain,
+          )));
+        }
+      }
+    }
+  }
+}
+
 function _conglomerate_site_register_submit($form, $form_state) {
   global $user;
   module_load_include('inc', 'conglomerate', 'includes/admin');
@@ -55,6 +76,7 @@ function _conglomerate_site_register_submit($form, $form_state) {
   $access_token->write();
 
   $server_url = url('', array('absolute' => TRUE));
+  // Create a config array that will be passed to the subsite
   $config = array(
     'user' => array(
       'name' => $user->name,
@@ -75,13 +97,16 @@ function _conglomerate_site_register_submit($form, $form_state) {
     ),
   );
 
+  // Load our credentials
   $consumer_key = variable_get('conglomerate_hostmaster_consumer_key', '');
-  $consumer = DrupalOAuthConsumerToken::load($consumer_key);
   $tokens = _conglomerate_oauth_tokens();
-  $auth = new RestClientOAuth($consumer, reset($tokens['access']));
+  $consumer = DrupalOAuthConsumerToken::load($consumer_key);
+  $access_token = reset($tokens['access']);
+
+  $auth = new RestClientOAuth($consumer, $access_token);
   $client = new RestClient($auth, new RestClientBaseFormatter(RestClientBaseFormatter::FORMAT_PHP));
 
-  $client->post(sprintf('%s/conglomeratehostmaster/api/subsite'), array(
+  $client->post(sprintf('%s/conglomeratehostmaster/api/subsite', $consumer->provider_url), array(
     'domain' => $domain,
     'config' => $config,
   ));
