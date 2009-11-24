@@ -39,6 +39,12 @@ function conglomerate_schema() {
         'length'      => 100,
         'not null'    => TRUE,
       ),
+      'description' => array(
+        'description' => t('The site description'),
+        'type'        => 'text',
+        'size'        => 'big',
+        'not null'    => TRUE,
+      ),
       'url' => array(
         'description' => t('The source url.'),
         'type'        => 'varchar',
@@ -99,6 +105,19 @@ function conglomerate_update_6001() {
   ));
 
   db_add_unique_key($ret, 'conglomerate_source', 'url', array('url'));
+
+  return $ret;
+}
+
+function conglomerate_update_6002() {
+  $ret = array();
+
+  db_add_field($ret, 'conglomerate_source', 'description', array(
+    'description' => t('The site description'),
+    'type'        => 'text',
+    'size'        => 'big',
+    'not null'    => TRUE,
+  ));
 
   return $ret;
 }
