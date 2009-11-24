@@ -117,8 +117,18 @@ function _conglomerate_site_register_submit($form, $form_state) {
   $auth = new RestClientOAuth($consumer, $access_token);
   $client = new RestClient($auth, new RestClientBaseFormatter(RestClientBaseFormatter::FORMAT_PHP));
 
-  $client->post(sprintf('%s/conglomeratehostmaster/api/subsite', $consumer->provider_url), array(
+  $response = (array)$client->post(sprintf('%s/conglomeratehostmaster/api/subsite', $consumer->provider_url), array(
     'domain' => $domain,
     'config' => $config,
   ));
+
+  $source = array(
+    'nid' => $response['nid'],
+    'oauth_consumer' => $consumer->key,
+    'title' => $domain,
+    'url' => 'http://' . $domain,
+  );
+  drupal_write_record('conglomerate_source', $source);
+
+  drupal_set_message(t('Your site will be created shortly. You will receive an email when it\'s ready.'));
 }
