@@ -33,7 +33,7 @@ function _conglomerate_site_register($form_state) {
 function _conglomerate_site_register_validate($form, $form_state) {
   $subdomain = $form_state['values']['subdomain'];
 
-  if (!preg_match('/^[a-z]$/', $subdomain)) {
+  if (!preg_match('/^[a-z]+$/', $subdomain)) {
     form_set_error('subdomain', t('The subdomain name may only contain lowercase characters from a to z.'));
   }
   else {
