@@ -54,7 +54,7 @@ function _conglomerate_site_register_validate($form, $form_state) {
     $exists = db_result(db_query("SELECT url FROM {conglomerate_source} WHERE url = '%s'", array(
       ':url' => $url,
     )));
-    if (!empty($url)) {
+    if (!empty($exists)) {
       form_set_error('subdomain', t('The subdomain "!subdomain" has already been registered.', array(
         '!subdomain' => $subdomain,
       )));
