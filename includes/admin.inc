@@ -92,6 +92,11 @@ function _conglomerate_hostmaster_settings($form_state) {
 function _conglomerate_hostmaster_settings_validate($form, $form_state) {
   $values = $form_state['values'];
 
+  $hostmaster_url = drupal_strtolower($values['hostmaster_url']);
+  if (!preg_match('/^https?:\/\/[a-z\.]+(:\d+)?(\/[a-z\.\/]+)?$$/', $hostmaster_url)) {
+    form_set_error('subdomain', t('The hostmaster url must be a valid url without a query string.'));
+  }
+
   if (isset($form['consumer_key_authorize_change']) && !$values['consumer_key_authorize_change']) {
     $consumer_key = variable_get('conglomerate_hostmaster_consumer_key', '');
     $token = DrupalOAuthConsumerToken::load($consumer_key);
