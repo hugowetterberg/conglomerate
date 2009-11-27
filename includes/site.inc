@@ -22,6 +22,15 @@ function _conglomerate_site_register($form_state) {
     '#maxlength' => 100,
   );
 
+  $form['tags'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Tags'),
+    '#required' => TRUE,
+    '#description' => t('A list of comma-separated tags that describe your site'),
+    '#size' => 30,
+    '#maxlength' => 100,
+  );
+
   $form['description'] = array(
     '#type' => 'textarea',
     '#title' => t('Description'),
@@ -99,7 +108,9 @@ function _conglomerate_site_register_submit($form, $form_state) {
   // Create a config array that will be passed to the subsite
   $config = array(
     'title' => $values['title'],
+    'tags' => $values['tags'],
     'user' => array(
+      'uid' => $user->uid,
       'name' => $user->name,
       'email' => $user->mail,
     ),
