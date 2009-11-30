@@ -89,11 +89,10 @@ function _conglomerate_site_register_submit($form, $form_state) {
 
   // Create consumer and access token that the subsite can use to communicate with the conglomerate
   // server.
-  $consumer = new DrupalOAuthConsumer(user_password(32), user_password(32), array(
+  $consumer = new DrupalOAuthConsumer(user_password(32), user_password(32), sprintf('%s/oauth/authorized', $domain), array(
     'uid' => $user->uid,
     'name' => $domain,
     'context' => 'conglomerate',
-    'callback_url' => sprintf('%s/oauth/authorized', $domain),
   ));
   $consumer->write();
   $access_token = new DrupalOAuthToken(user_password(32), user_password(32), array(
