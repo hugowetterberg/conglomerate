@@ -99,6 +99,7 @@ function _conglomerate_site_register_submit($form, $form_state) {
   $access_token = new DrupalOAuthToken(user_password(32), user_password(32), array(
     'uid' => $user->uid,
     'consumer_key' => $consumer->key,
+    'type' => 'access',
     'services' => array('*'),
     'authorized' => 1,
   ));
