@@ -175,7 +175,7 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         $record = array(
           'nid' => $node->nid,
           'sid' => $node->conglomerate_source,
-          'duplicate_of' => $noce->conglomerate_duplicate_of,
+          'duplicate_of' => isset($node->conglomerate_duplicate_of) ? $node->conglomerate_duplicate_of : 0,
         );
         drupal_write_record('conglomerate_node_source', $record, $update);
       }
@@ -206,7 +206,9 @@ function conglomerate_source_from_consumer($consumer) {
     $consumer = $consumer->key;
   }
   return db_fetch_object(db_query("SELECT * FROM {conglomerate_source}
-    WHERE oauth_consumer = '%s'"));
+    WHERE oauth_consumer = '%s'", array(
+      ':oauth_consumer' => $consumer,
+  )));
 }
 
 /**
