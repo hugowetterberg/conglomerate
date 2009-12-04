@@ -1,89 +1,9 @@
 <?php
 // $Id$
 
-function _conglomerate_site_register($form_state) {
-  $form = array();
-
-  $form['subdomain'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Subdomain'),
-    '#required' => TRUE,
-    '#description' => t('The subdomain for your site'),
-    '#size' => 20,
-    '#maxlength' => 20,
-  );
-
-  $form['title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Name'),
-    '#required' => TRUE,
-    '#description' => t('The name of your site'),
-    '#size' => 30,
-    '#maxlength' => 100,
-  );
-
-  $form['tags'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Tags'),
-    '#required' => TRUE,
-    '#description' => t('A list of comma-separated tags that describe your site'),
-    '#size' => 30,
-    '#maxlength' => 100,
-  );
-
-  $form['description'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Description'),
-    '#required' => TRUE,
-    '#description' => t('A short description of your site'),
-    '#cols' => 40,
-    '#rows' => 10,
-  );
-
-  $form['create'] = array(
-    '#type' => 'submit',
-    '#value' => t('Create'),
-  );
-
-  return $form;
-}
-
-function _conglomerate_site_register_validate($form, $form_state) {
-  $subdomain = $form_state['values']['subdomain'];
-
-  if (!preg_match('/^[a-z]+$/', $subdomain)) {
-    form_set_error('subdomain', t('The subdomain name may only contain lowercase characters from a to z.'));
-  }
-  else {
-    $reserved = drupal_strtolower(variable_get('conglomerate_reserved_subdomains', ''));
-    if (!empty($reserved)) {
-      $reserved = split("\n", $reserved);
-      foreach ($reserved as $r) {
-        if (drupal_strtolower($r) == $subdomain) {
-          form_set_error('subdomain', t('The subdomain "!subdomain" is reserved and may not be registered.', array(
-            '!subdomain' => $subdomain,
-          )));
-        }
-      }
-    }
-
-    // Check that the subdomain hasn't been taken
-    $url = sprintf('http://%s.%s', $values['subdomain'], variable_get('conglomerate_domain', ''));
-    $exists = db_result(db_query("SELECT url FROM {conglomerate_source} WHERE url = '%s'", array(
-      ':url' => $url,
-    )));
-    if (!empty($exists)) {
-      form_set_error('subdomain', t('The subdomain "!subdomain" has already been registered.', array(
-        '!subdomain' => $subdomain,
-      )));
-    }
-  }
-}
-
 function _conglomerate_site_register_submit($form, $form_state) {
   global $user;
   module_load_include('inc', 'conglomerate', 'includes/admin');
-
   $values = $form_state['values'];
   $domain = sprintf('%s.%s', $values['subdomain'], variable_get('conglomerate_domain', ''));
 

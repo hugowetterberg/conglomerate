@@ -71,6 +71,116 @@ function conglomerate_menu() {
   return $menu;
 }
 
+function conglomerate_form_site_node_form_alter($form, $form_state) {
+  $form['intro'] = array( // TODO: This text should be configurable in the admin interface. Either tt or some custom mechanism.
+    '#title' => t('Introductory help text'),
+    '#value' => t('Enter the following information to start a site at !domain. When your site has been approved you\'ll get an email with your credentials and a login link', array(
+      '!domain' => variable_get('conglomerate_domain', ''),
+    )),
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
+  );
+
+  $form['subdomain'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Desired subdomain'),
+    '#required' => TRUE,
+    '#description' => t('The subdomain for your site'),
+    '#size' => 20,
+    '#maxlength' => 20,
+    '#field_suffix' => '.' . variable_get('conglomerate_domain', ''),
+  );
+
+  $default_languages = variable_get('conglomerate_default_languages', array());
+  $lang_options = array();
+  $default_lang_options = array();
+  foreach (language_list() as $lang => $info) {
+    $lang_options[$lang] = $info->name;
+    if (!empty($default_languages[$lang])) {
+      $default_lang_options[$lang] = $info->name;
+    }
+  }
+
+  $form['enabled_languages'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Enabled languages'),
+    '#description' => t('Select the languages that you want to use on your site'),
+    '#options' => $lang_options,
+    '#default_value' => $default_languages,
+  );
+
+  $form['default_language'] = array(
+    '#type' => 'select',
+    '#title' => t('Default language'),
+    '#description' => t('The default language for the site'),
+    '#options' => $default_lang_options,
+    '#default_value' => $language->language,
+  );
+
+  $form['terms_of_use_text'] = array( // TODO: This text should be configurable in the admin interface. Either tt or some custom mechanism.
+    '#title' => t('Terms of use text'),
+    '#value' => 'Placeholder for a short terms of use text',
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
+  );
+
+  $form['terms_of_use_accepted'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('I\'ve read and accepted the terms of use'),
+    '#default_value' => 0,
+  );
+
+  // The url field should be hidden as it's generated based on the subdomain
+  $form['field_url']['#access'] = FALSE;
+
+  // Get rid of node form cruft
+  $form['body_field']['teaser_js']['#access'] = FALSE;
+  $form['body_field']['teaser_include']['#access'] = FALSE;
+  $form['body_field']['format']['#access'] = FALSE;
+  $form['buttons']['preview']['#access'] = FALSE;
+}
+
+function _conglomerate_site_register_validate($node) {
+  if (!$node->terms_of_use_accepted) {
+    form_set_error('terms_of_use_accepted', t('You have to accept the terms of use to create a site at skane.com.'));
+  }
+
+  if (!preg_match('/^[a-z]+$/', $node->subdomain)) {
+    form_set_error('subdomain', t('The subdomain name may only contain lowercase characters from a to z.'));
+  }
+  else {
+    $reserved = drupal_strtolower(variable_get('conglomerate_reserved_subdomains', ''));
+    if (!empty($reserved)) {
+      $reserved = split("\n", $reserved);
+      foreach ($reserved as $r) {
+        if (drupal_strtolower($r) == $subdomain) {
+          form_set_error('subdomain', t('The subdomain "!subdomain" is reserved and may not be registered.', array(
+            '!subdomain' => $subdomain,
+          )));
+        }
+      }
+    }
+
+    // Check that the subdomain hasn't been taken
+    $url = sprintf('http://%s.%s', $values['subdomain'], variable_get('conglomerate_domain', ''));
+    $exists = db_result(db_query("SELECT url FROM {conglomerate_source} WHERE url = '%s'", array(
+      ':url' => $url,
+    )));
+    if (!empty($exists)) {
+      form_set_error('subdomain', t('The subdomain "!subdomain" has already been registered.', array(
+        '!subdomain' => $subdomain,
+      )));
+    }
+  }
+
+  $languages = language_list();
+  if (!$node->enabled_languages[$node->default_language]) {
+    form_set_error('enabled_languages', t('You must enable !language if you want to use it as you site\'s default language.', array(
+      '!language' => $languages[$node->default_language]->native,
+    )));
+  }
+}
+
 /**
  * Implementation of hook_services_resources().
  */
@@ -79,6 +189,7 @@ function conglomerate_services_resources() {
     // Conglomerate resource
     'conglomerate-content' => ServicesOop::definitionFromClass('ConglomerateContentResource'),
   );
+  error_log(var_export($res, TRUE));
   return $res;
 }
 
@@ -191,6 +302,11 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         'conglomerate_duplicate_of' => $info->duplicate_of,
       );
     break;
+    case 'validate':
+      if ($node->type == 'site') {
+        _conglomerate_site_register_validate($node);
+      }
+      break;
   }
 }
 
@@ -247,7 +363,7 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
           'region'  => 'widecontent',
           'weight'  => 0,
         ),
-        
+
         // Lists
         'hotels' => array(
           'info'    => 'TEST Popular Hotels',
@@ -269,7 +385,7 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
           'region'  => 'lists',
           'weight'  => 30,
         ),
-        
+
         // Footer stuff
         'logo' => array(
           'info'    => 'TEST Footer Logo',
@@ -291,7 +407,7 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
           'region'  => 'footer_four',
           'weight'  => 0,
         ),
-        
+
         // Header stuff
         'language' => array(
           'info'    => 'TEST Language select',
@@ -304,16 +420,16 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
           'weight'  => 0,
         ),
       );
-      
+
       return $blocks;
-      
+
     // Render blocks
     case 'view':
       // Wich block?
       switch ($delta) {
         case 'featured':
           return array('content' => '<img src="' . url(drupal_get_path('theme', 'skane')) . '/gfx/remove_this.jpg" alt="" class="test_image" />');
-          
+
         case 'tags':
           return array('content' => '<div class="tags"><h3>Etiketter</h3>
     <a href="#">Lorem</a>
@@ -363,16 +479,16 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
     <a href="#">incididunt</a>
     <a href="#">labore</a>
 </div>');
-      
+
         case 'hotels':
           return array('title' => 'Populära hotel', 'content' => '<ol>   <li><a href="#">Grand Hotel</a></li>   <li><a href="#">Örenäs Slott Hotell &amp; konferens och en lång mening</a></li>   <li><a href="#">Hotel Lundia</a></li>   <li><a href="#">First Hotel Jörgen Kock</a></li>   <li><a href="#">Radison SAS Hotel</a></li>   <li><a href="#">Hotel Kärnan</a></li>   <li><a href="#">First Hotel Planetstaden</a></li>   <li><a href="#">Kiviks Hotell</a></li>   <li><a href="#">Hilton Malmö City</a></li>   <li><a href="#">Hotel Plaza</a></li> </ol>');
-          
+
         case 'see':
           return array('title' => 'Populära sevärdheter', 'content' => '<ol>   <li><a href="#">Skånes Djurpark</a></li>   <li><a href="#">Ystad Djurpark</a></li>   <li><a href="#">Tropikariet Helsingborg</a></li>   <li><a href="#">Tosselilla Sommarland</a></li>   <li><a href="#">Botaniska Trädgården</a></li>   <li><a href="#">Skanörs Fiskrögeri</a></li>   <li><a href="#">Kulturbolaget - KB</a></li>   <li><a href="#">Ales Stenar</a></li>   <li><a href="#">Glimmingehus</a></li>   <li><a href="#">Terrariet Reptilcenter</a></li> </ol>');
-          
+
         case 'restaurants':
           return array('title' => 'Populära restauranger', 'content' => '<ol>   <li><a href="#">Lagmark Gastronomi</a></li>   <li><a href="#">Cade le fil du Rasoir</a></li>   <li><a href="#">Smaka</a></li>   <li><a href="#">Bloom In the Park</a></li>   <li><a href="#">Torso Twisted</a></li>   <li><a href="#">Vendel du Sturehof</a></li>   <li><a href="#">Årstiderna</a></li>   <li><a href="#">Mento</a></li>   <li><a href="#">Mrs Brown</a></li>   <li><a href="#">La Roche</a></li> </ol>');
-          
+
         case 'blog':
           return array('title' => 'Nyligen bloggat', 'content' => '<ul>
   <li>
@@ -396,22 +512,22 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
     <h4><a href="#">Guldkant i tillvaron</a></h4>
   </li>
 </ul>');
-      
+
         case 'logo':
           return array('title' => '', 'content' => 'TOURISM IN SKÅNE LOGO ETC');
-          
+
         case 'orgnr':
           return array('title' => 'Tourism in Skåne AB', 'content' => 'Org.nr: 556750-6398');
-          
+
         case 'contact':
           return array('title' => 'Kontakta oss', 'content' => 'Tourism in Skåne AB<br /> Stortorget 9, SE-211 22 Malmö<br /> Tel. +46 (0)40-623 98 00<br /> tourism@skane.com');
-        
+
         case 'meta':
           return array('title' => '', 'content' => '<h3>   <img src="/sites/default/themes/skane/gfx/rss.jpg" alt="RSS" />Prenumerera &mdash; RSS </h3> <ul>   <li><a href="#">Användarvillkor</a></li>   <li><a href="#">PUL Personuppgiftslagen</a></li>   <li><a href="#">Vi använder cookies</a></li> </ul>');
-        
+
         case 'language':
           return array('title' => 'Språk', 'content' => '<ul><li class="active"><a href="#">På svenska</a></li><li><a href="#">In English</a></li><li><a href="#">vers le français</a></li><li><a href="#">Español</a></li><li><a href="#">Tyska</a></li><li><a href="#">Esperanto</a></li></ul>');
-      
+
         case 'invest':
           return array('title' => '', 'content' => '<ul><li><a href="#"><strong>event</strong> in skåne</a></li><li><a href="#"><strong>invest</strong> in skåne</a></li></ul>');
       }

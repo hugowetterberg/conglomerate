@@ -15,13 +15,13 @@ function conglomerate_schema() {
   $schema['conglomerate_source'] = array(
     'description' => 'Information about a conglomerate source',
     'fields' => array(
-      'sid' => array(
-        'description' => t('The primary identifier for the source.'),
+      'nid' => array(
+        'description' => t('The primary identifier for the site node.'),
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-      'nid' => array(
+      'sid' => array(
         'description' => t('The primary identifier for the node on the hostmaster server.'),
         'type' => 'int',
         'unsigned' => TRUE,
@@ -33,31 +33,12 @@ function conglomerate_schema() {
         'length'      => 32,
         'not null'    => TRUE,
       ),
-      'title' => array(
-        'description' => t('The source name.'),
-        'type'        => 'varchar',
-        'length'      => 100,
-        'not null'    => TRUE,
-      ),
-      'description' => array(
-        'description' => t('The site description'),
-        'type'        => 'text',
-        'size'        => 'big',
-        'not null'    => TRUE,
-      ),
-      'url' => array(
-        'description' => t('The source url.'),
-        'type'        => 'varchar',
-        'length'      => 255,
-        'not null'    => TRUE,
-      ),
     ),
     'unique keys' => array(
       'oauth_consumer' => array('oauth_consumer'),
-      'url' => array('url'),
-      'nid' => array('nid'),
+      'sid' => array('nid'),
     ),
-    'primary key' => array('sid'),
+    'primary key' => array('nid'),
   );
 
   $schema['conglomerate_node_source'] = array(
@@ -70,7 +51,7 @@ function conglomerate_schema() {
         'not null' => TRUE,
       ),
       'sid' => array(
-        'description' => t('The primary identifier for the conglomerate source.'),
+        'description' => t('The primary identifier for the conglomerate site node.'),
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,

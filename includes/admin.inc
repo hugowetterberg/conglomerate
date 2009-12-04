@@ -13,6 +13,18 @@ function _conglomerate_settings($form_state) {
     '#default_value' => variable_get('conglomerate_domain', ''),
   );
 
+  $lang_options = array();
+  foreach (language_list() as $lang => $info) {
+    $lang_options[$lang] = $info->name;
+  }
+  $form['conglomerate_default_languages'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Default languages'),
+    '#description' => t('The selected languages will be available as default languages for subsites'),
+    '#options' => $lang_options,
+    '#default_value' => variable_get('conglomerate_default_languages', array()),
+  );
+
   $form['conglomerate_reserved_subdomains'] = array(
     '#type' => 'textarea',
     '#title' => t('Reserved subdomains'),
