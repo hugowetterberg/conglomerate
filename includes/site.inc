@@ -1,17 +1,15 @@
 <?php
 // $Id$
 
-function _conglomerate_site_register_submit($form, $form_state) {
+function _conglomerate_site_register_submit($node) {
   global $user;
   module_load_include('inc', 'conglomerate', 'includes/admin');
-  $values = $form_state['values'];
-  $domain = sprintf('%s.%s', $values['subdomain'], variable_get('conglomerate_domain', ''));
 
   // Create consumer and access token that the subsite can use to communicate with the conglomerate
   // server.
-  $consumer = new DrupalOAuthConsumer(user_password(32), user_password(32), sprintf('%s/oauth/authorized', $domain), array(
+  $consumer = new DrupalOAuthConsumer(user_password(32), user_password(32), sprintf('%s/oauth/authorized', $node->conglomerate_domain), array(
     'uid' => $user->uid,
-    'name' => $domain,
+    'name' => $node->title,
     'context' => 'conglomerate',
   ));
   $consumer->write();
@@ -24,11 +22,17 @@ function _conglomerate_site_register_submit($form, $form_state) {
   ));
   $access_token->write();
 
+  // Set the consumer key for the site
+  $node->conglomerate_oauth_consumer = $consumer->key;
+
   $server_url = url('', array('absolute' => TRUE));
   // Create a config array that will be passed to the subsite
   $config = array(
-    'title' => $values['title'],
-    'tags' => $values['tags'],
+    'nid' => $node->nid,
+    'title' => $node->title,
+    'tags' => $node->taxonomy['tags'][variable_get('conglomorate_tag_vocabulary', 0)],
+    'position' => $node->simple_geo_position,
+    'area' => $node->simple_geo_area,
     'user' => array(
       'uid' => $user->uid,
       'name' => $user->name,
@@ -59,18 +63,9 @@ function _conglomerate_site_register_submit($form, $form_state) {
   $client = new RestClient($auth, new RestClientBaseFormatter(RestClientBaseFormatter::FORMAT_PHP));
 
   $response = (array)$client->post(sprintf('%s/conglomeratehostmaster/api/subsite.php', $hm_consumer->provider_url), array(
-    'domain' => $domain,
+    'domain' => $node->conglomerate_domain,
     'config' => $config,
   ));
 
-  $source = array(
-    'nid' => $response['nid'],
-    'oauth_consumer' => $consumer->key,
-    'title' => $values['title'],
-    'description' => $values['description'],
-    'url' => 'http://' . $domain,
-  );
-  drupal_write_record('conglomerate_source', $source);
-
-  drupal_set_message(t('Your site will be created shortly. You will receive an email when it\'s ready.'));
+  drupal_set_message(t('The site will be created shortly. And an email will be sent when it\'s ready.'));
 }

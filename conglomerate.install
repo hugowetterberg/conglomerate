@@ -17,7 +17,7 @@ function conglomerate_schema() {
     'fields' => array(
       'nid' => array(
         'description' => t('The primary identifier for the site node.'),
-        'type' => 'serial',
+        'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
@@ -25,6 +25,11 @@ function conglomerate_schema() {
         'description' => t('The primary identifier for the node on the hostmaster server.'),
         'type' => 'int',
         'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'domain' => array(
+        'type' => 'varchar',
+        'length' => 255,
         'not null' => TRUE,
       ),
       'oauth_consumer' => array(
@@ -73,32 +78,4 @@ function conglomerate_schema() {
   );
 
   return $schema;
-}
-
-function conglomerate_update_6001() {
-  $ret = array();
-
-  db_add_field($ret, 'conglomerate_source', 'nid', array(
-    'description' => t('The primary identifier for the node on the hostmaster server.'),
-    'type' => 'int',
-    'unsigned' => TRUE,
-    'not null' => TRUE,
-  ));
-
-  db_add_unique_key($ret, 'conglomerate_source', 'url', array('url'));
-
-  return $ret;
-}
-
-function conglomerate_update_6002() {
-  $ret = array();
-
-  db_add_field($ret, 'conglomerate_source', 'description', array(
-    'description' => t('The site description'),
-    'type'        => 'text',
-    'size'        => 'big',
-    'not null'    => TRUE,
-  ));
-
-  return $ret;
 }

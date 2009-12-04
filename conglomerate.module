@@ -16,7 +16,7 @@ function conglomerate_autoload_info() {
 }
 
 function conglomerate_perm() {
-  return array('adminster conglomerate server', 'conglomerate register subsite');
+  return array('adminster conglomerate server', 'conglomerate register subsite', 'conglomerate custom subsite url', 'conglomerate approve site');
 }
 
 function conglomerate_menu() {
@@ -72,24 +72,44 @@ function conglomerate_menu() {
 }
 
 function conglomerate_form_site_node_form_alter($form, $form_state) {
+  $base_domain = variable_get('conglomerate_domain', '');
+  $node = $form['#node'];
+
   $form['intro'] = array( // TODO: This text should be configurable in the admin interface. Either tt or some custom mechanism.
     '#title' => t('Introductory help text'),
     '#value' => t('Enter the following information to start a site at !domain. When your site has been approved you\'ll get an email with your credentials and a login link', array(
-      '!domain' => variable_get('conglomerate_domain', ''),
+      '!domain' => $base_domain,
     )),
     '#prefix' => '<p>',
     '#suffix' => '</p>',
   );
 
-  $form['subdomain'] = array(
+  $domain = isset($node->conglomerate_domain) ? $node->conglomerate_domain : '';
+  $custom_domain = FALSE;
+  if (strpos($domain, $base_domain) !== FALSE) {
+    $domain = drupal_substr($domain, 0, drupal_strlen($domain) - drupal_strlen($base_domain) - 1);
+  }
+  $custom_domain = strpos($domain, '.');
+  $form['conglomerate_domain'] = array(
     '#type' => 'textfield',
     '#title' => t('Desired subdomain'),
     '#required' => TRUE,
-    '#description' => t('The subdomain for your site'),
+    '#description' => $custom_domain ? t('The domain for your site') : t('The subdomain for your site'),
+    '#default_value' => $domain,
     '#size' => 20,
     '#maxlength' => 20,
-    '#field_suffix' => '.' . variable_get('conglomerate_domain', ''),
+    '#field_suffix' => $custom_domain ? '' : '.' . $base_domain,
+    '#disabled' => $custom_domain && !user_access('conglomerate custom subsite url'),
   );
+
+  if (empty($node->conglomerate_site_id) && user_access('conglomerate approve site')) {
+    $form['conglomerate_site_approved'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Approve the site'),
+      '#default_value' => 0,
+      '#descriptions' => t('This will mark the site as approved'),
+    );
+  }
 
   $default_languages = variable_get('conglomerate_default_languages', array());
   $lang_options = array();
@@ -117,21 +137,20 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
     '#default_value' => $language->language,
   );
 
-  $form['terms_of_use_text'] = array( // TODO: This text should be configurable in the admin interface. Either tt or some custom mechanism.
-    '#title' => t('Terms of use text'),
-    '#value' => 'Placeholder for a short terms of use text',
-    '#prefix' => '<p>',
-    '#suffix' => '</p>',
-  );
+  if (!user_access('conglomerate approve site')) {
+    $form['terms_of_use_text'] = array( // TODO: This text should be configurable in the admin interface. Either tt or some custom mechanism.
+      '#title' => t('Terms of use text'),
+      '#value' => 'Placeholder for a short terms of use text',
+      '#prefix' => '<p>',
+      '#suffix' => '</p>',
+    );
 
-  $form['terms_of_use_accepted'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('I\'ve read and accepted the terms of use'),
-    '#default_value' => 0,
-  );
-
-  // The url field should be hidden as it's generated based on the subdomain
-  $form['field_url']['#access'] = FALSE;
+    $form['terms_of_use_accepted'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('I\'ve read and accepted the terms of use'),
+      '#default_value' => 0,
+    );
+  }
 
   // Get rid of node form cruft
   $form['body_field']['teaser_js']['#access'] = FALSE;
@@ -141,34 +160,47 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
 }
 
 function _conglomerate_site_register_validate($node) {
-  if (!$node->terms_of_use_accepted) {
+  if (empty($node->conglomerate_domain)) {
+    form_set_error('conglomerate_subdomain', t('You have to provide a domain'));
+  }
+
+  if (!$node->terms_of_use_accepted && !user_access('conglomerate approve site')) {
     form_set_error('terms_of_use_accepted', t('You have to accept the terms of use to create a site at skane.com.'));
   }
 
-  if (!preg_match('/^[a-z]+$/', $node->subdomain)) {
-    form_set_error('subdomain', t('The subdomain name may only contain lowercase characters from a to z.'));
+  $base_domain = variable_get('conglomerate_domain', '');
+  $domain = $node->conglomerate_domain;
+  if (strpos($domain, $base_domain) !== FALSE) {
+    $domain = drupal_substr($domain, 0, drupal_strlen($domain) - drupal_strlen($base_domain) - 1);
+  }
+  if (!preg_match('/^[a-z]+$/', $node->conglomerate_domain) && !(user_access('conglomerate custom subsite url') && preg_match('/^[a-z\.]+$/', $node->conglomerate_domain))) {
+    form_set_error('conglomerate_subdomain', t('The subdomain name may only contain lowercase characters from a to z.'));
   }
   else {
+    if (strpos($domain, '.') === FALSE) {
+      $domain .= '.' . $base_domain;
+    }
     $reserved = drupal_strtolower(variable_get('conglomerate_reserved_subdomains', ''));
     if (!empty($reserved)) {
       $reserved = split("\n", $reserved);
       foreach ($reserved as $r) {
-        if (drupal_strtolower($r) == $subdomain) {
-          form_set_error('subdomain', t('The subdomain "!subdomain" is reserved and may not be registered.', array(
-            '!subdomain' => $subdomain,
+        $r .= '.' . variable_get('conglomerate_domain', '');
+        if (drupal_strtolower($r) == $domain) {
+          form_set_error('conglomerate_subdomain', t('The domain "!domain" is reserved and may not be registered.', array(
+            '!domain' => $domain,
           )));
         }
       }
     }
 
     // Check that the subdomain hasn't been taken
-    $url = sprintf('http://%s.%s', $values['subdomain'], variable_get('conglomerate_domain', ''));
-    $exists = db_result(db_query("SELECT url FROM {conglomerate_source} WHERE url = '%s'", array(
-      ':url' => $url,
+    $exists = db_result(db_query("SELECT domain FROM {conglomerate_source} WHERE domain = '%s' AND nid != %d", array(
+      ':domain' => $domain,
+      ':nid' => $node->nid,
     )));
     if (!empty($exists)) {
-      form_set_error('subdomain', t('The subdomain "!subdomain" has already been registered.', array(
-        '!subdomain' => $subdomain,
+      form_set_error('subdomain', t('The domain "!domain" has already been registered.', array(
+        '!domain' => $domain,
       )));
     }
   }
@@ -277,36 +309,94 @@ function conglomerate_services_endpoints() {
  * Implementation of hook_nodeapi().
  */
 function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  $update = NULL;
-  switch ($op) {
-    case 'update':
-      $update = array('nid');
-    case 'insert':
-      if (isset($node->conglomerate_source)) {
-        $record = array(
-          'nid' => $node->nid,
-          'sid' => $node->conglomerate_source,
-          'duplicate_of' => isset($node->conglomerate_duplicate_of) ? $node->conglomerate_duplicate_of : 0,
-        );
-        drupal_write_record('conglomerate_node_source', $record, $update);
-      }
-    break;
-    case 'load':
-      $info = db_fetch_object(db_query("SELECT sid, duplicate_of FROM {conglomerate_node_source}
-        WHERE nid = %d",
-          array(
-            ':nid' => $node->nid,
-      )));
-      return array(
-        'conglomerate_source' => $info->sid,
-        'conglomerate_duplicate_of' => $info->duplicate_of,
-      );
-    break;
-    case 'validate':
-      if ($node->type == 'site') {
-        _conglomerate_site_register_validate($node);
-      }
+  if ($node->type != 'site') { // All node types except site
+    $update = NULL;
+    switch ($op) {
+      case 'update':
+        $update = array('nid');
+      case 'insert':
+        if (isset($node->conglomerate_source)) {
+          $record = array(
+            'nid' => $node->nid,
+            'sid' => $node->conglomerate_source,
+            'duplicate_of' => isset($node->conglomerate_duplicate_of) ? $node->conglomerate_duplicate_of : 0,
+          );
+          drupal_write_record('conglomerate_node_source', $record, $update);
+        }
       break;
+      case 'load':
+        $info = db_fetch_object(db_query("SELECT sid, duplicate_of FROM {conglomerate_node_source}
+          WHERE nid = %d",
+            array(
+              ':nid' => $node->nid,
+        )));
+        if ($info) {
+          return array(
+            'conglomerate_source' => $info->sid,
+            'conglomerate_duplicate_of' => $info->duplicate_of,
+          );
+        }
+        break;
+    }
+  }
+  else { // Site nodes
+    $update = NULL;
+    switch ($op) {
+      case 'update':
+        $update = array('nid');
+      case 'insert':
+        $domain = $node->conglomerate_domain;
+        if (strpos($domain, '.') === FALSE) {
+          $domain .= '.' . variable_get('conglomerate_domain', '');
+        }
+        $node->conglomerate_domain = $domain;
+
+        if ($node->conglomerate_site_approved) {
+          require_once('includes/site.inc');
+          _conglomerate_site_register_submit($node);
+        }
+        // Save the source record for the site
+        $record = array();
+        if ($node->nid) {
+          $record['nid'] = $node->nid;
+        }
+        if (isset($node->conglomerate_domain)) {
+          $record['domain'] = $node->conglomerate_domain;
+        }
+        if (isset($node->conglomerate_site_id)) {
+          $record['sid'] = $node->conglomerate_site_id;
+        }
+        if (isset($node->conglomerate_oauth_consumer)) {
+          $record['oauth_consumer'] = $node->conglomerate_oauth_consumer;
+        }
+        drupal_write_record('conglomerate_source', $record, $update);
+        break;
+      case 'load':
+        $info = db_fetch_object(db_query("SELECT sid, domain, oauth_consumer FROM {conglomerate_source}
+          WHERE nid = %d",
+            array(
+              ':nid' => $node->nid,
+        )));
+        if ($info) {
+          return array(
+            'conglomerate_site_id' => $info->sid,
+            'conglomerate_domain' => $info->domain,
+            'conglomerate_oauth_consumer' => $info->oauth_consumer,
+          );
+        }
+        break;
+      case 'validate':
+        _conglomerate_site_register_validate($node);
+        break;
+      case 'delete':
+        if (!empty($node->conglomerate_oauth_consumer)) {
+          DrupalOAuthConsumer::deleteConsumer($node->conglomerate_oauth_consumer);
+        }
+        db_query('DELETE FROM {conglomerate_source} WHERE nid = %d', array(
+          ':nid' => $node->nid,
+        ));
+        // TODO: Unpublish the aggregated nodes?
+    }
   }
 }
 

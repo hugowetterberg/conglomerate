@@ -13,6 +13,23 @@ function _conglomerate_settings($form_state) {
     '#default_value' => variable_get('conglomerate_domain', ''),
   );
 
+  $vocab_options = array(
+    0 => t('-- Select a vocabulary'),
+  );
+  foreach (taxonomy_get_vocabularies() as $vid => $vocab) {
+    if ($vocab->tags) {
+      $vocab_options[$vid] = $vocab->name;
+    }
+  }
+  $form['conglomorate_tag_vocabulary'] = array(
+    '#type' => 'select',
+    '#title' => t('Tag vocabulary'),
+    '#description' => t('The vocabulary that conglomerate should use for tags'),
+    '#options' => $vocab_options,
+    '#default_value' => variable_get('conglomorate_tag_vocabulary', 0),
+  );
+
+
   $lang_options = array();
   foreach (language_list() as $lang => $info) {
     $lang_options[$lang] = $info->name;
@@ -49,7 +66,7 @@ function _conglomerate_hostmaster_settings($form_state) {
     '#size' => 40,
     '#maxlength' => 255,
   );
-  
+
   $form['consumer_key'] = array(
     '#type' => 'textfield',
     '#title' => t('Consumer key'),
@@ -75,9 +92,9 @@ function _conglomerate_hostmaster_settings($form_state) {
       $form['consumer_secret']['#default_value'] = $token->secret;
       $form['hostmaster_url']['#default_value'] = $token->provider_url;
     }
-    
-    $access = db_result(db_query_range("SELECT token_key FROM {oauth_common_token} 
-      WHERE provider_token = 0 
+
+    $access = db_result(db_query_range("SELECT token_key FROM {oauth_common_token}
+      WHERE provider_token = 0
       AND type='access'
       AND consumer_key='%s'", 0, 1, array(
         ':consumer_key' => $consumer_key,
@@ -159,7 +176,7 @@ function _conglomerate_hostmaster_settings_submit($form, $form_state) {
   $consumer->provider_url = $values['hostmaster_url'];
   $consumer->write($update);
   variable_set('conglomerate_hostmaster_consumer_key', $consumer->key);
-  
+
   drupal_set_message('Consumer information updated.');
 }
 
@@ -234,8 +251,8 @@ function _conglomerate_oauth_tokens() {
   );
   $consumer_key = variable_get('conglomerate_hostmaster_consumer_key', '');
   if ($consumer_key) {
-    $token_res = db_query("SELECT * FROM {oauth_common_token} 
-      WHERE provider_token = 0 
+    $token_res = db_query("SELECT * FROM {oauth_common_token}
+      WHERE provider_token = 0
       AND consumer_key='%s'
       ORDER BY created DESC", array(
         ':consumer_key' => $consumer_key,
@@ -255,7 +272,7 @@ function _conglomerate_hostmaster_authorization_submit($form, $form_state) {
 
   if ($values['op'] == $form['get_request_token']['#value']) {
     $client = new DrupalOAuthClient($consumer);
-    
+
     try {
       $token = $client->getRequestToken();
     }
@@ -265,8 +282,8 @@ function _conglomerate_hostmaster_authorization_submit($form, $form_state) {
 
     if ($token) {
       // We got a request token, delete all old tokens
-      db_query("DELETE FROM {oauth_common_token} 
-        WHERE provider_token = 0 
+      db_query("DELETE FROM {oauth_common_token}
+        WHERE provider_token = 0
         AND consumer_key='%s'", array(
           ':consumer_key' => $consumer_key,
         ));
@@ -290,8 +307,8 @@ function _conglomerate_hostmaster_authorization_submit($form, $form_state) {
 
       if ($token) {
         // We got a access token, delete all old tokens
-        db_query("DELETE FROM {oauth_common_token} 
-          WHERE provider_token = 0 
+        db_query("DELETE FROM {oauth_common_token}
+          WHERE provider_token = 0
           AND consumer_key='%s'", array(
             ':consumer_key' => $consumer_key,
           ));
