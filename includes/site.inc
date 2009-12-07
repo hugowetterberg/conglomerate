@@ -48,6 +48,8 @@ function _conglomerate_site_register_submit($node) {
     'title' => $node->title,
     'tags' => $node->taxonomy['tags'][variable_get('conglomorate_tag_vocabulary', 0)],
     'position' => $node->simple_geo_position,
+    'default_language' => $node->default_language,
+    'languages' => array_values($node->enabled_languages),
     'area' => $node->simple_geo_area,
     'user' => array(
       'uid' => $user->uid,
