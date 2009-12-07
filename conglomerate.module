@@ -172,7 +172,7 @@ function _conglomerate_site_register_validate($node) {
   if (strpos($domain, $base_domain) !== FALSE) {
     $domain = drupal_substr($domain, 0, drupal_strlen($domain) - drupal_strlen($base_domain) - 1);
   }
-  if (!preg_match('/^[a-z]+$/', $node->conglomerate_domain) && !(user_access('conglomerate custom subsite url') && preg_match('/^[a-z\.]+$/', $node->conglomerate_domain))) {
+  if (!preg_match('/^[0-9a-z]+$/', $node->conglomerate_domain) && !(user_access('conglomerate custom subsite url') && preg_match('/^[0-9a-z\.]+$/', $node->conglomerate_domain))) {
     form_set_error('conglomerate_subdomain', t('The subdomain name may only contain lowercase characters from a to z.'));
   }
   else {
