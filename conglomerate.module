@@ -352,7 +352,7 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 
         if ($node->conglomerate_site_approved) {
           require_once('includes/site.inc');
-          _conglomerate_site_register_submit($node);
+          $record['sid'] = _conglomerate_site_register_submit($node);
         }
         // Save the source record for the site
         $record = array();

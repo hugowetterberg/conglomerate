@@ -84,4 +84,5 @@ function _conglomerate_site_register_submit($node) {
   ));
 
   drupal_set_message(t('The site will be created shortly. And an email will be sent when it\'s ready.'));
+  return $response['nid'];
 }
