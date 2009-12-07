@@ -25,9 +25,8 @@ function conglomerate_menu() {
   $menu['register-site'] = array(
     'title' => 'Register site',
     'file'  => 'includes/site.inc',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('_conglomerate_site_register'),
-    'access arguments' => array('conglomerate register subsite'),
+    'page callback' => '_conglomerate_site_register',
+    'access arguments' => array('access content'),
     'type'    => MENU_NORMAL_ITEM,
   );
 

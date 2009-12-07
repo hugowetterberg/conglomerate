@@ -1,6 +1,22 @@
 <?php
 // $Id$
 
+function _conglomerate_site_register() {
+  global $user;
+
+  if (!$user->uid) {
+    drupal_goto('user/register', array('destination' => 'register-site'));
+  }
+
+  if (!user_access('create site content')) {
+    return t('It looks like sites aren\'t open for public registration yet.');
+  }
+  else {
+    drupal_goto('node/add/site');
+  }
+}
+
+
 function _conglomerate_site_register_submit($node) {
   global $user;
   module_load_include('inc', 'conglomerate', 'includes/admin');
