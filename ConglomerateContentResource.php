@@ -176,6 +176,10 @@ class ConglomerateContentResource {
         'required' => FALSE,
         'adapt' => 'adaptPicture',
       ),
+      'large_picture' => array(
+        'required' => FALSE,
+        'adapt' => 'adaptLargePicture',
+      ),
       'url' => array(
         'required' => TRUE,
         'adapt' => 'adaptUrl',
@@ -257,6 +261,16 @@ class ConglomerateContentResource {
       'url' => $node->picture,
     ));
     unset($node->picture);
+  }
+
+  /**
+   * Format the picture url so that it's understood by CCK.
+   */
+  public static function adaptLargePicture(&$node) {
+    $node->field_large_image_url = array(array(
+      'url' => $node->large_picture,
+    ));
+    unset($node->large_picture);
   }
 
   public static function access($op='view', $args=array()) {
