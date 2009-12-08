@@ -71,6 +71,7 @@ function _conglomerate_site_register_submit($node) {
     ),
   );
 
+
   // Load our credentials
   $consumer_key = variable_get('conglomerate_hostmaster_consumer_key', '');
   $tokens = _conglomerate_oauth_tokens();
@@ -80,11 +81,15 @@ function _conglomerate_site_register_submit($node) {
   $auth = new RestClientOAuth($hm_consumer, $hm_access_token, new OAuthSignatureMethod_HMAC('sha1'));
   $client = new RestClient($auth, new RestClientBaseFormatter(RestClientBaseFormatter::FORMAT_PHP));
 
-  $response = (array)$client->post(sprintf('%s/conglomeratehostmaster/api/subsite.php', $hm_consumer->provider_url), array(
+  $data = array(
     'domain' => $node->conglomerate_domain,
     'config' => $config,
-  ));
+  );
+  if ($node->conglomerate_devel_platform) {
+    $data['platform'] = 'devel';
+  }
 
+  $response = (array)$client->post(sprintf('%s/conglomeratehostmaster/api/subsite.php', $hm_consumer->provider_url), $data);
   drupal_set_message(t('The site will be created shortly. And an email will be sent when it\'s ready.'));
   return $response['nid'];
 }
