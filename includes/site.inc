@@ -21,6 +21,14 @@ function _conglomerate_site_register_submit($node) {
   global $user;
   module_load_include('inc', 'conglomerate', 'includes/admin');
 
+  // Create consumer and access token that the subsite can use to log in users.
+  $login_consumer = new DrupalOAuthConsumer(user_password(32), user_password(32), sprintf('%s/oauth/authorized', $node->conglomerate_domain), array(
+    'uid' => $user->uid,
+    'name' => $node->title,
+    'context' => 'conglomerate_login',
+  ));
+  $login_consumer->write();
+
   // Create consumer and access token that the subsite can use to communicate with the conglomerate
   // server.
   $consumer = new DrupalOAuthConsumer(user_password(32), user_password(32), sprintf('%s/oauth/authorized', $node->conglomerate_domain), array(
@@ -29,6 +37,7 @@ function _conglomerate_site_register_submit($node) {
     'context' => 'conglomerate',
   ));
   $consumer->write();
+
   $access_token = new DrupalOAuthToken(user_password(32), user_password(32), array(
     'uid' => $user->uid,
     'consumer_key' => $consumer->key,
@@ -60,6 +69,11 @@ function _conglomerate_site_register_submit($node) {
       'name' => variable_get('site_name', $server_url),
       'url' => $server_url,
       'endpoint' => url('api', array('absolute' => TRUE)),
+      'login_endpoint' => url('login-api', array('absolute' => TRUE)),
+    ),
+    'login_consumer' => array(
+      'key' => $login_consumer->key,
+      'secret' => $login_consumer->secret,
     ),
     'consumer' => array(
       'key' => $consumer->key,

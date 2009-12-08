@@ -12,6 +12,9 @@ function conglomerate_autoload_info() {
     'ConglomerateContentFeedModel' => array(
       'file' => 'ConglomerateContentFeedModel.php',
     ),
+    'ConglomerateUserResource' => array(
+      'file' => 'ConglomerateUserResource.php',
+    ),
   );
 }
 
@@ -232,8 +235,8 @@ function conglomerate_services_resources() {
   $res = array(
     // Conglomerate resource
     'conglomerate-content' => ServicesOop::definitionFromClass('ConglomerateContentResource'),
+    'conglomerate-user' => ServicesOop::definitionFromClass('ConglomerateUserResource'),
   );
-  error_log(var_export($res, TRUE));
   return $res;
 }
 
@@ -242,6 +245,12 @@ function conglomerate_services_resources() {
  */
 function conglomerate_oauth_default_contexts() {
   return array(
+    'conglomerate_login' => array(
+      '*' => array(
+        'title' => 'Yes, I want to log in to !appname',
+        'description' => 'This will allow you to post comments on !appname',
+      ),
+    ),
     'conglomerate' => array(
       '*' => array(
         'title' => 'Yes, I want to connect !appname to !sitename',
@@ -262,6 +271,27 @@ function conglomerate_oauth_default_contexts() {
  */
 function conglomerate_services_endpoints() {
   return array(
+    'conglomerate_login' => array(
+      'title' => 'Conglomerate login API',
+      'server' => 'rest_server',
+      'path' => 'login-api',
+      'authentication' => 'services_oauth',
+      'authentication_settings' => array(
+        'oauth_context' => 'conglomerate_login',
+      ),
+      'resources' => array(
+        'conglomerate-user' => array(
+          'alias' => 'user',
+          'actions' => array(
+            'info' => array(
+              'enabled' => TRUE,
+              'oauth_credentials' => 'token',
+              'oauth_authorization' => '*',
+            ),
+          ),
+        ),
+      ),
+    ),
     'conglomerate' => array(
       'title' => 'Conglomerate API',
       'server' => 'rest_server',
