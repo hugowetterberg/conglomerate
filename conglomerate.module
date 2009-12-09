@@ -246,21 +246,31 @@ function conglomerate_services_resources() {
 function conglomerate_oauth_default_contexts() {
   return array(
     'conglomerate_login' => array(
-      '*' => array(
-        'title' => 'Yes, I want to log in to !appname',
-        'description' => 'This will allow you to post comments on !appname',
-      ),
+      'name' => 'Conglomerate login',
+      'title' => 'Login to !appname',
+      'message' => 'Hi !user, !appname has asked us whether you want to be logged in to !appname',
+      'warning' => 'Click here if you didn\'t ask to be logged in to !appname, or if you don\'t want to login anymore.',
+      'authorization_title' => 'Login as !user',
+      'authorization_levels' => array(
+        'user_info' => array(
+          'title' => 'Yes, I want to log in to !appname as !user',
+          'description' => 'This will log you in to !appname and give it access to details like your username and email, but not to your password.',
+        ),
+      )
     ),
     'conglomerate' => array(
-      '*' => array(
-        'title' => 'Yes, I want to connect !appname to !sitename',
-        'description' => 'This will allow your site !appname to push content to !sitename',
-        'weight' => -1,
-      ),
-      'read' => array(
-        'title' => 'I want to connect, but just to get stuff from !sitename',
-        'description' => 'This will allow !appname to fetch content from !sitename, but it will not allow any information to be pushed to !sitename.',
-        'weight' => 0,
+      'name' => 'Conglomerate',
+      'authorization_levels' => array(
+        '*' => array(
+          'title' => 'Yes, I want to connect !appname to !sitename',
+          'description' => 'This will allow your site !appname to push content to !sitename',
+          'weight' => -1,
+        ),
+        'read' => array(
+          'title' => 'I want to connect, but just to get stuff from !sitename',
+          'description' => 'This will allow !appname to fetch content from !sitename, but it will not allow any information to be pushed to !sitename.',
+          'weight' => 0,
+        ),
       ),
     )
   );
@@ -286,7 +296,7 @@ function conglomerate_services_endpoints() {
             'info' => array(
               'enabled' => TRUE,
               'oauth_credentials' => 'token',
-              'oauth_authorization' => '*',
+              'oauth_authorization' => 'user_info',
             ),
           ),
         ),
