@@ -19,7 +19,7 @@ function conglomerate_autoload_info() {
 }
 
 function conglomerate_perm() {
-  return array('adminster conglomerate server', 'conglomerate register subsite', 'conglomerate custom subsite url', 'conglomerate approve site');
+  return array('administer conglomerate server', 'conglomerate register subsite', 'conglomerate custom subsite url', 'conglomerate approve site');
 }
 
 function conglomerate_menu() {
@@ -39,7 +39,7 @@ function conglomerate_menu() {
     'file'  => 'includes/admin.inc',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('_conglomerate_settings'),
-    'access arguments' => array('adminster conglomerate server'),
+    'access arguments' => array('administer conglomerate server'),
     'type'    => MENU_NORMAL_ITEM,
   );
 
@@ -55,7 +55,7 @@ function conglomerate_menu() {
     'file'  => 'includes/admin.inc',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('_conglomerate_hostmaster_settings'),
-    'access arguments' => array('adminster conglomerate server'),
+    'access arguments' => array('administer conglomerate server'),
     'type'    => MENU_LOCAL_TASK,
     'weight' => 9,
   );
@@ -65,7 +65,7 @@ function conglomerate_menu() {
     'file'  => 'includes/admin.inc',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('_conglomerate_hostmaster_authorization'),
-    'access arguments' => array('adminster conglomerate server'),
+    'access arguments' => array('administer conglomerate server'),
     'type'    => MENU_LOCAL_TASK,
     'weight' => 10,
   );
