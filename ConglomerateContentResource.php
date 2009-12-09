@@ -113,6 +113,12 @@ class ConglomerateContentResource {
   public static function index($page=0, $fields=array(), $parameters=array()) {
     $builder = new QueryBuilder();
 
+    $builder->add_table('p', 'LEFT OUTER JOIN {content_field_image_url} AS p ON p.nid=n.nid', 'n', array(
+      'image' => array(
+        'column' => 'field_image_url_url',
+      ),
+    ));
+
     if ($parameters['__action']=='describe') {
       return $builder->describe();
     }
@@ -145,14 +151,15 @@ class ConglomerateContentResource {
       $node->uri = services_resource_uri(array($node->type, $node->nid));
       $nodes[] = $node;
     }
+
     return $nodes;
   }
 
   /**
    * Helper function that maps incoming data to the proper node attributes
    *
-   * @param object $node 
-   * @param object $data 
+   * @param object $node
+   * @param object $data
    * @return object
    */
   private static function nodeWrite($node, $data) {
