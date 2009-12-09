@@ -20,7 +20,7 @@ function _conglomerate_site_register() {
 function _conglomerate_site_register_submit($node) {
   module_load_include('inc', 'conglomerate', 'includes/admin');
 
-  $account = array('uid'=>$node->uid);
+  $account = user_load(array('uid'=>$node->uid));
 
   // Create consumer and access token that the subsite can use to log in users.
   $login_consumer = new DrupalOAuthConsumer(user_password(32), user_password(32), sprintf('http://%s/oauth/authorized', $node->conglomerate_domain), array(
