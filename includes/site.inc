@@ -18,12 +18,13 @@ function _conglomerate_site_register() {
 
 
 function _conglomerate_site_register_submit($node) {
-  global $user;
   module_load_include('inc', 'conglomerate', 'includes/admin');
+
+  $account = array('uid'=>$node->uid);
 
   // Create consumer and access token that the subsite can use to log in users.
   $login_consumer = new DrupalOAuthConsumer(user_password(32), user_password(32), sprintf('http://%s/oauth/authorized', $node->conglomerate_domain), array(
-    'uid' => $user->uid,
+    'uid' => $account->uid,
     'name' => $node->title,
     'context' => 'conglomerate_login',
   ));
@@ -32,14 +33,14 @@ function _conglomerate_site_register_submit($node) {
   // Create consumer and access token that the subsite can use to communicate with the conglomerate
   // server.
   $consumer = new DrupalOAuthConsumer(user_password(32), user_password(32), sprintf('http://%s/oauth/authorized', $node->conglomerate_domain), array(
-    'uid' => $user->uid,
+    'uid' => $account->uid,
     'name' => $node->title,
     'context' => 'conglomerate',
   ));
   $consumer->write();
 
   $access_token = new DrupalOAuthToken(user_password(32), user_password(32), array(
-    'uid' => $user->uid,
+    'uid' => $account->uid,
     'consumer_key' => $consumer->key,
     'type' => 'access',
     'services' => array('*'),
@@ -61,9 +62,9 @@ function _conglomerate_site_register_submit($node) {
     'languages' => array_values($node->enabled_languages),
     'area' => $node->simple_geo_area,
     'user' => array(
-      'uid' => $user->uid,
-      'name' => $user->name,
-      'email' => $user->mail,
+      'uid' => $account->uid,
+      'name' => $account->name,
+      'email' => $account->mail,
     ),
     'server' => array(
       'name' => variable_get('site_name', $server_url),
