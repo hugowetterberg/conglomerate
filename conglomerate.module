@@ -251,6 +251,7 @@ function conglomerate_oauth_default_contexts() {
       'message' => 'Hi !user, !appname has asked us whether you want to be logged in to !appname',
       'warning' => 'Click here if you didn\'t ask to be logged in to !appname, or if you don\'t want to login anymore.',
       'authorization_title' => 'Login as !user',
+      'access_token_lifetime' => 120,
       'authorization_levels' => array(
         'user_info' => array(
           'title' => 'Yes, I want to log in to !appname as !user',
