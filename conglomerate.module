@@ -353,6 +353,17 @@ function conglomerate_services_endpoints() {
             ),
           )
         ),
+        'simplegeosearch' => array(
+          'alias' => 'geosearch',
+          'operations' => array(
+            'index' => array(
+              'enabled' => TRUE,
+              'preprocess' => '_conglomerate_modify_solr_search',
+              'oauth_credentials' => 'unsigned_consumer',
+              'oauth_authorization' => 'read',
+            ),
+          ),
+        ),
       ),
     ),
   );

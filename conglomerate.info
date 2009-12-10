@@ -9,5 +9,6 @@ dependencies[] = node_resource
 dependencies[] = services_oop
 dependencies[] = services_oauth
 dependencies[] = solr_resource
+dependencies[] = simplegeo_search
 dependencies[] = query_builder
 core = 6.x
