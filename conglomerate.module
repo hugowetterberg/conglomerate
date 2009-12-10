@@ -124,6 +124,11 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
 
   $default_languages = variable_get('conglomerate_default_languages', array());
   $lang_options = array();
+  $edit_mode = FALSE;
+  if ($node->nid) {
+    $config = unserialize(db_result(db_query("SELECT config FROM {conglomerate_source} WHERE nid = %d", $node->nid)));
+    $edit_mode = TRUE;
+  }
   $default_lang_options = array();
   foreach (language_list() as $lang => $info) {
     $lang_options[$lang] = $info->name;
@@ -137,7 +142,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
     '#title' => t('Enabled languages'),
     '#description' => t('Select the languages that you want to use on your site'),
     '#options' => $lang_options,
-    '#default_value' => $default_languages,
+    '#default_value' => $edit_mode ? $config['enabled_languages'] : $default_languages,
     '#disabled' => !empty($node->conglomerate_site_id),
   );
 
@@ -146,7 +151,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
     '#title' => t('Default language'),
     '#description' => t('The default language for the site'),
     '#options' => $default_lang_options,
-    '#default_value' => $language->language,
+    '#default_value' => $edit_mode ? $config['default_language'] : 'en',
     '#disabled' => !empty($node->conglomerate_site_id),
   );
 
@@ -471,6 +476,13 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
           }
           if (isset($node->conglomerate_oauth_consumer)) {
             $record['oauth_consumer'] = $node->conglomerate_oauth_consumer;
+          }
+          if (isset($node->default_language)) {
+            $config = array(
+              'enabled_languages' => $node->enabled_languages,
+              'default_language' => $node->default_language,
+            );
+            $record['config'] = $config;
           }
 
           drupal_write_record('conglomerate_source', $record, $update);
