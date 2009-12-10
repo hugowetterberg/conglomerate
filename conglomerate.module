@@ -373,6 +373,41 @@ function conglomerate_services_endpoints() {
 }
 
 /**
+ * Implementation of hook_user().
+ */
+function conglomerate_user($op, &$edit, &$account, $category) {
+  if ($op == 'view') {
+    $res = db_query("SELECT nid, title FROM {node} WHERE uid = %d AND type = '%s'", array(
+      ':uid' => $account->uid,
+      ':type' => 'site',
+    ));
+
+    $sites = array(
+      'title' => array(
+        '#type' => 'markup',
+        '#prefix' => '<h3>',
+        '#suffix' => '</h3>',
+        '#value' => t('Sites'),
+        '#weight' => -10,
+      ),
+      'links' => array(
+        '#prefix' => '<ul>',
+        '#suffix' => '<ul>',
+      ),
+    );
+    while ($site = db_fetch_object($res)) {
+      $sites['links'][$site->nid] = array(
+        '#type' => 'markup',
+        '#prefix' => '<li>',
+        '#suffix' => '</li>',
+        '#value' => l($site->title, 'node/' . $site->nid),
+      );
+    }
+    $account->content['sites'] = $sites;
+  }
+}
+
+/**
  * Implementation of hook_nodeapi().
  */
 function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
