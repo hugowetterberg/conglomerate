@@ -489,16 +489,19 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         }
         break;
       case 'load':
-        $info = db_fetch_object(db_query("SELECT sid, domain, oauth_consumer FROM {conglomerate_source}
+        $info = db_fetch_object(db_query("SELECT sid, domain, oauth_consumer, config FROM {conglomerate_source}
           WHERE nid = %d",
             array(
               ':nid' => $node->nid,
         )));
         if ($info) {
+          $config = unserialize($info->config);
           return array(
             'conglomerate_site_id' => $info->sid,
             'conglomerate_domain' => $info->domain,
             'conglomerate_oauth_consumer' => $info->oauth_consumer,
+            'default_language' => $config['default_language'],
+            'enabled_languages' => $config['enabled_languages'],
           );
         }
         break;
