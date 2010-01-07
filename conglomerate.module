@@ -132,9 +132,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
   $default_lang_options = array();
   foreach (language_list() as $lang => $info) {
     $lang_options[$lang] = $info->name;
-    if (!empty($default_languages[$lang])) {
-      $default_lang_options[$lang] = $info->name;
-    }
+    $default_lang_options[$lang] = $info->name;
   }
 
   $form['enabled_languages'] = array(
@@ -146,12 +144,13 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
     '#disabled' => !empty($node->conglomerate_site_id),
   );
 
+  global $language;
   $form['default_language'] = array(
     '#type' => 'select',
     '#title' => t('Default language'),
     '#description' => t('The default language for the site'),
     '#options' => $default_lang_options,
-    '#default_value' => $edit_mode ? $config['default_language'] : 'en',
+    '#default_value' => $edit_mode ? $config['default_language'] : $language->language,
     '#disabled' => !empty($node->conglomerate_site_id),
   );
 
@@ -180,7 +179,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
 function _conglomerate_site_register_validate($node) {
   if (empty($node->conglomerate_site_id)) {
     if (empty($node->conglomerate_domain)) {
-      form_set_error('conglomerate_subdomain', t('You have to provide a domain'));
+      form_set_error('conglomerate_domain', t('You have to provide a domain'));
     }
 
     if (!$node->terms_of_use_accepted && !user_access('conglomerate approve site')) {
@@ -193,7 +192,7 @@ function _conglomerate_site_register_validate($node) {
       $domain = drupal_substr($domain, 0, drupal_strlen($domain) - drupal_strlen($base_domain) - 1);
     }
     if (!preg_match('/^[0-9a-z]+$/', $node->conglomerate_domain) && !(user_access('conglomerate custom subsite url') && preg_match('/^[0-9a-z\.]+$/', $node->conglomerate_domain))) {
-      form_set_error('conglomerate_subdomain', t('The subdomain name may only contain lowercase characters from a to z.'));
+      form_set_error('conglomerate_domain', t('The subdomain name may only contain lowercase characters from a to z.'));
     }
     else {
       if (strpos($domain, '.') === FALSE) {
@@ -205,7 +204,7 @@ function _conglomerate_site_register_validate($node) {
         foreach ($reserved as $r) {
           $r .= '.' . variable_get('conglomerate_domain', '');
           if (drupal_strtolower($r) == $domain) {
-            form_set_error('conglomerate_subdomain', t('The domain "!domain" is reserved and may not be registered.', array(
+            form_set_error('conglomerate_domain', t('The domain "!domain" is reserved and may not be registered.', array(
               '!domain' => $domain,
             )));
           }
@@ -218,7 +217,7 @@ function _conglomerate_site_register_validate($node) {
         ':nid' => $node->nid,
       )));
       if (!empty($exists)) {
-        form_set_error('subdomain', t('The domain "!domain" has already been registered.', array(
+        form_set_error('conglomerate_domain', t('The domain "!domain" has already been registered.', array(
           '!domain' => $domain,
         )));
       }
