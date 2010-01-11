@@ -83,6 +83,36 @@ function conglomerate_schema() {
     ),
   );
 
+  $schema['conglomerate_user_roles'] = array(
+  'description' => t('Holds user roles on subsites'),
+  'fields' => array(
+    'uid' => array(
+      'description' => t('User ID on main server'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'role' => array(
+      'description' => t('Role'),
+      'type' => 'varchar',
+      'length' => '32',
+      'not null' => TRUE,
+      'default' => '0',
+    ),
+    'sid' => array(
+      'description' => t('Site ID'),
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+  ),
+  'primary key' => array('uid', 'role', 'sid'),
+  'indexes' => array(
+    'uid' => array('uid'),
+  ),
+);
+
+
   return $schema;
 }
 
