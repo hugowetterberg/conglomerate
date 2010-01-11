@@ -395,18 +395,21 @@ function conglomerate_user($op, &$edit, &$account, $category) {
         '#weight' => -10,
       ),
       'links' => array(
-        '#prefix' => '<ul>',
-        '#suffix' => '<ul>',
+        '#prefix' => '<table class="usersitelist">',
+        '#suffix' => '</table>',
       ),
     );
     while ($site = db_fetch_object($res)) {
+
       $sites['links'][$site->nid] = array(
         '#type' => 'markup',
-        '#prefix' => '<li>',
-        '#suffix' => '</li>',
-        '#value' => l($site->title, 'node/' . $site->nid),
+        '#prefix' => '<tr>',
+        '#suffix' => '</tr>',
+        '#value' => '<td>' . l($site->title, 'node/' . $site->nid) . '</td>',
       );
     }
+
+    unset($account->content['summary']);
     $account->content['sites'] = $sites;
   }
 }
