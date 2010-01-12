@@ -126,11 +126,13 @@ function conglomerate_update_6001() {
 
   $ret = array();
   db_add_field($ret, 'conglomerate_source', 'config', $spec);
+
+  return $ret;
 }
 
 function conglomerate_update_6002() {
   $ret = array();
-  db_create_table($ret, 'conglomerate_user_roles', 
+  db_create_table($ret, 'conglomerate_user_roles',
     array(
       'description' => t('Holds user roles on subsites'),
       'fields' => array(
@@ -160,4 +162,6 @@ function conglomerate_update_6002() {
       ),
     )
   );
+
+  return $ret;
 }
