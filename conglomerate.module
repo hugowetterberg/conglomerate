@@ -131,8 +131,8 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
   }
   $default_lang_options = array();
   foreach (language_list() as $lang => $info) {
-    $lang_options[$lang] = $info->name;
-    $default_lang_options[$lang] = $info->name;
+    $lang_options[$lang] = t($info->name);
+    $default_lang_options[$lang] = t($info->name);
   }
 
   $form['enabled_languages'] = array(
