@@ -480,6 +480,12 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
             $record['oauth_consumer'] = $node->conglomerate_oauth_consumer;
           }
           if (isset($node->default_language)) {
+            // Removes unchecked languages from the enabled_languages array to prevent installation problems
+            foreach ($node->enabled_languages as $key => $value) {
+              if (empty($value)) {
+                unset($node->enabled_languages[$key]);
+              }
+            }
             $config = array(
               'enabled_languages' => $node->enabled_languages,
               'default_language' => $node->default_language,
