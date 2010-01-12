@@ -482,7 +482,7 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
           if (isset($node->default_language)) {
             // Removes unchecked languages from the enabled_languages array to prevent installation problems
             foreach ($node->enabled_languages as $key => $value) {
-              if (empty($value)) {
+              if (empty($value) || $value == 0) {
                 unset($node->enabled_languages[$key]);
               }
             }
