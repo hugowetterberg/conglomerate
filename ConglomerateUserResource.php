@@ -38,10 +38,10 @@ class ConglomerateUserResource {
 
     // Extract the info we need from post data
     $uid = $info->euid;
-    $roles = unserialize($info->roles);
+    $consumer = services_get_server_info('oauth_consumer');
 
     // Get site ID
-    $result = db_query("SELECT * FROM {conglomerate_source} WHERE oauth_consumer='%s' LIMIT 1", $info->oauth);
+    $result = db_query("SELECT * FROM {conglomerate_source} WHERE oauth_consumer='%s' LIMIT 1", $consumer->key);
     if ($result !== FALSE) {
       $site = db_fetch_object($result);
       $sid = $site->nid;
@@ -53,7 +53,7 @@ class ConglomerateUserResource {
 
 
       // If no roles were sent it means user is deleted. And also, the for loop won't be run.
-      foreach ($roles as $role) {
+      foreach ($info->roles as $role) {
         db_query("INSERT INTO {conglomerate_user_roles} VALUES(%d, '%s', %d)", $uid, $role, $sid);
       }
 
