@@ -126,7 +126,6 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
   $lang_options = array();
   $edit_mode = FALSE;
   if ($node->nid) {
-    $config = unserialize(db_result(db_query("SELECT config FROM {conglomerate_source} WHERE nid = %d", $node->nid)));
     $edit_mode = TRUE;
   }
   $default_lang_options = array();
@@ -140,7 +139,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
     '#title' => t('Enabled languages'),
     '#description' => t('Select the languages that you want to use on your site'),
     '#options' => $lang_options,
-    '#default_value' => $edit_mode ? $config['enabled_languages'] : $default_languages,
+    '#default_value' => $edit_mode ? $node->enabled_languages : $default_languages,
     '#disabled' => !empty($node->conglomerate_site_id),
   );
 
@@ -150,7 +149,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
     '#title' => t('Default language'),
     '#description' => t('The default language for the site'),
     '#options' => $default_lang_options,
-    '#default_value' => $edit_mode ? $config['default_language'] : $language->language,
+    '#default_value' => $edit_mode ? $node->default_language : $language->language,
     '#disabled' => !empty($node->conglomerate_site_id),
   );
 
@@ -371,6 +370,16 @@ function conglomerate_services_endpoints() {
             ),
           ),
         ),
+        'conglomerate-user' => array(
+          'alias' => 'user',
+          'actions' => array(
+            'roleUpdate' => array(
+              'enabled' => TRUE,
+              'oauth_credentials' => 'token',
+              'oauth_authorization' => '*',
+            ),
+          ),
+        ),
       ),
     ),
   );
@@ -480,10 +489,12 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
             $record['oauth_consumer'] = $node->conglomerate_oauth_consumer;
           }
           if (isset($node->default_language)) {
-            // Removes unchecked languages from the enabled_languages array to prevent installation problems
-            foreach ($node->enabled_languages as $key => $value) {
-              if (empty($value) || $value == 0) {
-                unset($node->enabled_languages[$key]);
+            // Prevent writing of unchecked languages to database.
+            if (is_array($node->enabled_languages)) {
+              foreach ($node->enabled_languages as $key => $value) {
+                if (empty($value)) {
+                  unset($node->enabled_languages[$key]);
+                }
               }
             }
             $config = array(
@@ -513,6 +524,14 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         )));
         if ($info) {
           $config = unserialize($info->config);
+          // Prevent reading of unchecked languages from database.
+          if (is_array($config['enabled_languages'])) {
+            foreach ($config['enabled_languages'] as $key => $value) {
+              if (empty($value)) {
+                unset($config['enabled_languages'][$key]);
+              }
+            }
+          }
           return array(
             'conglomerate_site_id' => $info->sid,
             'conglomerate_domain' => $info->domain,
