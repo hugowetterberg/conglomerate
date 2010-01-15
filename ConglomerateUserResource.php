@@ -55,6 +55,9 @@ class ConglomerateUserResource {
       // If no roles were sent it means user is deleted. And also, the for loop won't be run.
       foreach ($info->roles as $role) {
         db_query("INSERT INTO {conglomerate_user_roles} VALUES(%d, '%s', %d)", $uid, $role, $sid);
+        if (function_exists('drush_log')) {
+          drush_log('Updated role: ' . $role . ' for UID: ' . $uid . ' on main server');
+        }
       }
 
       $return = array('error' => FALSE);
