@@ -56,7 +56,7 @@ class ConglomerateUserResource {
       foreach ($info->roles as $role) {
         db_query("INSERT INTO {conglomerate_user_roles} VALUES(%d, '%s', %d)", $uid, $role, $sid);
         if (function_exists('drush_log')) {
-          drush_log('Updated role: ' . $role . ' for UID: ' . $uid . ' on main server');
+          $response[$role] = 'Updated role: ' . $role . ' for UID: ' . $uid . ' on main server';
         }
       }
 
