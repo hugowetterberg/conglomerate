@@ -3,6 +3,7 @@
 
 function conglomerate_install() {
   drupal_install_schema('conglomerate');
+  db_query("UPDATE {system} SET weight = %d WHERE name = '%s' AND type = '%s'", 1, 'conglomerate', 'module');
 }
 
 function conglomerate_uninstall() {

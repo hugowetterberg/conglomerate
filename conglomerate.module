@@ -79,8 +79,8 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
 
   $form['intro'] = array( // TODO: This text should be configurable in the admin interface. Either tt or some custom mechanism.
     '#title' => t('Introductory help text'),
-    '#value' => t('Enter the following information to start a site at !domain. When your site has been approved you\'ll get an email with your credentials and a login link', array(
-      '!domain' => $base_domain,
+    '#value' => t('Enter the following information to register a site on !domain. Once your site has been approved you will receive an email with information on how to use your new site. Everything but the site address can be changed later.', array(
+      '!domain' => l('skane.com', 'http://' . $base_domain),
     )),
     '#prefix' => '<p>',
     '#suffix' => '</p>',
@@ -101,8 +101,8 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
   $custom_domain = strpos($domain, '.');
   $form['conglomerate_domain'] = array(
     '#type' => 'textfield',
-    '#title' => t('Desired subdomain'),
-    '#description' => $custom_domain ? t('The domain for your site') : t('The subdomain for your site'),
+    '#title' => t('Preferred site adress'),
+    '#description' => $custom_domain ? t('The domain for your site') : t('(ie. yourname.skane.com)'),
     '#default_value' => $domain,
     '#size' => 20,
     '#maxlength' => 20,
@@ -136,8 +136,8 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
 
   $form['enabled_languages'] = array(
     '#type' => 'checkboxes',
-    '#title' => t('Enabled languages'),
-    '#description' => t('Select the languages that you want to use on your site'),
+    '#title' => t('Select the languages you want on your site '),
+    '#description' => t('Set default language below'),
     '#options' => $lang_options,
     '#default_value' => $edit_mode ? $node->enabled_languages : $default_languages,
     '#disabled' => !empty($node->conglomerate_site_id),
@@ -167,6 +167,13 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
       '#default_value' => 0,
     );
   }
+
+  $form['donetext'] = array(
+    '#value' => t('Click Save to send your registration to us for review. You will receive an email as soon as your site is approved.'),
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
+    '#weight' => 50,
+  );
 
   // Get rid of node form cruft
   $form['body_field']['teaser_js']['#access'] = FALSE;
@@ -487,8 +494,8 @@ function conglomerate_user($op, &$edit, &$account, $category) {
 
     $sites['createnew'] = array(
       '#type' => 'markup',
-      '#value' => '<a href="' . $base_url . '/register-site" class="button">' . t('Create new site') . '</a>',
-      '#weight' => 10,
+      '#value' => '<a href="' . $base_url . '/register-site" class="button"><span>' . t('Create new site') . '</span></a>',
+      '#weight' => -10,
     );
 
     unset($account->content['summary']);
@@ -511,7 +518,7 @@ function _conglomerate_rolesort($a, $b) {
       return 0;
     }
 
-    return ($roles[$a->role] > $roles[$b->role]) ? -1 : 1;
+    return ($roles[$a->role] > $roles[$b->role]) ? 1 : -1;
 }
 
 /**
