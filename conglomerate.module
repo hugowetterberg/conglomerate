@@ -390,37 +390,105 @@ function conglomerate_services_endpoints() {
  */
 function conglomerate_user($op, &$edit, &$account, $category) {
   if ($op == 'view') {
-    $res = db_query("SELECT nid, title FROM {node} WHERE uid = %d AND type = '%s'", array(
-      ':uid' => $account->uid,
-      ':type' => 'site',
-    ));
-
-    $sites = array(
-      'title' => array(
-        '#type' => 'markup',
-        '#prefix' => '<h3>',
-        '#suffix' => '</h3>',
-        '#value' => t('Sites'),
-        '#weight' => -10,
-      ),
-      'links' => array(
-        '#prefix' => '<table class="usersitelist">',
-        '#suffix' => '</table>',
-      ),
+    // Defines role hierarchy, used to determine what to show
+    $roles = array(
+      'authenticated user' => 0,
+      'editor' => 1,
+      'admin' => 2,
     );
-    while ($site = db_fetch_object($res)) {
 
-      $sites['links'][$site->nid] = array(
+    // Get users role for each site he owns, can edit or has visited
+    $res = db_query("SELECT u.uid, u.role, s.nid, s.domain
+                     FROM {conglomerate_user_roles} AS u
+                     INNER JOIN {conglomerate_source} AS s ON s.nid=u.sid
+                     WHERE u.uid=%d
+                     ORDER BY domain, role",
+                     $account->uid);
+
+    $siteList = array();
+
+    // We order by domain, so this effectively means we check one site at a time
+    $tmp = '';
+    while ($row = db_fetch_object($res)) {
+      if ($tmp !== $row->domain) {
+        $tmp = $row->domain;
+      }
+
+      // Filter out roles with lower value
+      if (!isset($siteList[$row->domain])) {
+        $siteList[$row->domain] = $row;
+      } else {
+        // Only keep row with highest ranking role
+        if ($roles[$siteList[$row->domain]->role] < $roles[$row->role]) {
+          $siteList[$row->domain] = $row;
+        }
+      }
+    }
+
+    // Sort sites
+    usort($siteList, 'rolesort');
+
+    $currentRole = '';
+    foreach ($siteList as $site) {
+      if ($currentRole !== $site->role) {
+        $sites[$site->role] = array(
+          'title' => array(
+            '#type' => 'markup',
+            '#prefix' => '<h3>',
+            '#suffix' => '</h3>',
+            '#value' => t(ucwords($site->role)),
+            '#weight' => -10,
+          ),
+          'links' => array(
+            '#prefix' => '<table class="usersitelist">',
+            '#suffix' => '</table>',
+          ),
+        );
+        $currentRole = $site->role;
+      }
+
+      $sites[$site->role]['links'][$site->nid] = array(
         '#type' => 'markup',
         '#prefix' => '<tr>',
         '#suffix' => '</tr>',
-        '#value' => '<td>' . l($site->title, 'node/' . $site->nid) . '</td>',
+        '#value' => '<td>' . l($site->domain, 'http://' . $site->domain) . '</td>',
       );
+
+      if ($site->role == 'editor') {
+        $sites[$site->role]['links'][$site->nid]['#value'] .= '<td>' . l(t('Create Content'), 'http://' . $site->domain . '/node/add') . '</td>';
+      }
+
+      else if ($site->role == 'admin') {
+        $sites[$site->role]['links'][$site->nid]['#value'] .= '<td>' . l(t('Create Content'), 'http://' . $site->domain . '/node/add') . '</td>';
+        $sites[$site->role]['links'][$site->nid]['#value'] .= '<td>' . l(t('Admin'), 'http://' . $site->domain . '/admin/build/skane') . '</td>';
+      }
+
+      else {
+        $sites[$site->role]['links'][$site->nid]['#value'] .= '<td></td><td></td>';
+      }
     }
 
     unset($account->content['summary']);
     $account->content['sites'] = $sites;
   }
+}
+
+/**
+ * Custom sort function to sort sites by role
+ */
+function rolesort($a, $b) {
+    // Defines role hierarchy
+    $roles = array(
+      'authenticated user' => 0,
+      'editor' => 1,
+      'admin' => 2,
+    );
+
+    if ($roles[$a->role] == $roles[$b->role]) {
+      return 0;
+    }
+
+    return ($roles[$a->role] > $roles[$b->role]) ? 1 : -1;
 }
 
 /**
