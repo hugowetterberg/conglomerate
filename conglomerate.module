@@ -438,14 +438,17 @@ function conglomerate_user($op, &$edit, &$account, $category) {
         switch($site->role) {
           case 'admin':
             $title = t('Sites you can administrate');
+            $weight = -10;
             break;
 
           case 'editor':
             $title = t('Sites you can create content on');
+            $weight = -5;
             break;
 
           default:
             $title = t('Sites you have logged in to');
+            $weight = -1;
             break;
         }
 
@@ -453,6 +456,7 @@ function conglomerate_user($op, &$edit, &$account, $category) {
           'links' => array(
             '#prefix' => '<table class="usersitelist"><thead><tr><th colspan="3">' . $title . '</th></tr></thead>',
             '#suffix' => '</table>',
+            '#weight' => $weight,
           ),
         );
         $currentRole = $site->role;
