@@ -405,7 +405,7 @@ function conglomerate_user($op, &$edit, &$account, $category) {
                      FROM {conglomerate_user_roles} AS u
                      INNER JOIN {conglomerate_source} AS s ON s.nid=u.sid
                      WHERE u.uid=%d
-                     ORDER BY domain, role",
+                     ORDER BY domain",
                      $account->uid);
 
     $siteList = array();
@@ -429,7 +429,7 @@ function conglomerate_user($op, &$edit, &$account, $category) {
     }
 
     // Sort sites
-    usort($siteList, 'rolesort');
+    usort($siteList, '_conglomerate_rolesort');
 
     $currentRole = '';
     foreach ($siteList as $site) {
@@ -452,6 +452,7 @@ function conglomerate_user($op, &$edit, &$account, $category) {
             break;
         }
 
+        // Create section
         $sites[$site->role] = array(
           'links' => array(
             '#prefix' => '<table class="usersitelist"><thead><tr><th colspan="3">' . $title . '</th></tr></thead>',
@@ -462,6 +463,7 @@ function conglomerate_user($op, &$edit, &$account, $category) {
         $currentRole = $site->role;
       }
 
+      // Add links to section
       $sites[$site->role]['links'][$site->nid] = array(
         '#type' => 'markup',
         '#prefix' => '<tr>',
@@ -497,7 +499,7 @@ function conglomerate_user($op, &$edit, &$account, $category) {
 /**
  * Custom sort function to sort sites by role
  */
-function rolesort($a, $b) {
+function _conglomerate_rolesort($a, $b) {
     // Defines role hierarchy
     $roles = array(
       'authenticated user' => 0,
@@ -509,7 +511,7 @@ function rolesort($a, $b) {
       return 0;
     }
 
-    return ($roles[$a->role] > $roles[$b->role]) ? 1 : -1;
+    return ($roles[$a->role] > $roles[$b->role]) ? -1 : 1;
 }
 
 /**
