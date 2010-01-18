@@ -250,9 +250,9 @@ function conglomerate_oauth_default_contexts() {
   return array(
     'conglomerate_login' => array(
       'name' => 'Conglomerate login',
-      'title' => 'Login to !appname',
-      'message' => 'Hi !user! Click on the "login" button to log in to !appname.',
-      'warning' => 'Click here if you didn\'t ask to be logged in to !appname.',
+      'title' => 'Login to @appname',
+      'message' => 'Hi @user@ Click on the "login" button to log in to @appname.',
+      'warning' => 'Click here if you didn\'t ask to be logged in to @appname.',
       'default_authorization_levels' => array('user_info'),
       'disable_auth_level_selection' => TRUE,
       'deny_access_title' => 'Cancel',
@@ -260,8 +260,8 @@ function conglomerate_oauth_default_contexts() {
       'access_token_lifetime' => 120,
       'authorization_levels' => array(
         'user_info' => array(
-          'title' => 'Yes, I want to log in to !appname as !user',
-          'description' => 'This will log you in to !appname and give it access to details like your username and email, but not to your password.',
+          'title' => 'Yes, I want to log in to @appname as @user',
+          'description' => 'This will log you in to @appname and give it access to details like your username and email, but not to your password.',
         ),
       )
     ),
@@ -269,13 +269,13 @@ function conglomerate_oauth_default_contexts() {
       'name' => 'Conglomerate',
       'authorization_levels' => array(
         '*' => array(
-          'title' => 'Yes, I want to connect !appname to !sitename',
-          'description' => 'This will allow your site !appname to push content to !sitename',
+          'title' => 'Yes, I want to connect @appname to @sitename',
+          'description' => 'This will allow your site @appname to push content to @sitename',
           'weight' => -1,
         ),
         'read' => array(
-          'title' => 'I want to connect, but just to get stuff from !sitename',
-          'description' => 'This will allow !appname to fetch content from !sitename, but it will not allow any information to be pushed to !sitename.',
+          'title' => 'I want to connect, but just to get stuff from @sitename',
+          'description' => 'This will allow @appname to fetch content from @sitename, but it will not allow any information to be pushed to @sitename.',
           'weight' => 0,
         ),
       ),
