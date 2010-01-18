@@ -251,7 +251,7 @@ function conglomerate_oauth_default_contexts() {
     'conglomerate_login' => array(
       'name' => 'Conglomerate login',
       'title' => 'Login to @appname',
-      'message' => 'Hi @user@ Click on the "login" button to log in to @appname.',
+      'message' => 'Hi @user! Click on the "login" button to log in to @appname.',
       'warning' => 'Click here if you didn\'t ask to be logged in to @appname.',
       'default_authorization_levels' => array('user_info'),
       'disable_auth_level_selection' => TRUE,
