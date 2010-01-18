@@ -390,6 +390,9 @@ function conglomerate_services_endpoints() {
  */
 function conglomerate_user($op, &$edit, &$account, $category) {
   if ($op == 'view') {
+    // Add css
+    drupal_add_css(drupal_get_path('theme', 'skane') . '/css/user.css');
+
     // Defines role hierarchy, used to determine what to show
     $roles = array(
       'authenticated user' => 0,
@@ -414,7 +417,7 @@ function conglomerate_user($op, &$edit, &$account, $category) {
         $tmp = $row->domain;
       }
 
-      // Filter out roles with lower value
+      // Filter out roles with lower rank
       if (!isset($siteList[$row->domain])) {
         $siteList[$row->domain] = $row;
       } else {
@@ -431,16 +434,24 @@ function conglomerate_user($op, &$edit, &$account, $category) {
     $currentRole = '';
     foreach ($siteList as $site) {
       if ($currentRole !== $site->role) {
+        // Define section title
+        switch($site->role) {
+          case 'admin':
+            $title = t('Sites you can administrate');
+            break;
+
+          case 'editor':
+            $title = t('Sites you can create content on');
+            break;
+
+          default:
+            $title = t('Sites you have logged in to');
+            break;
+        }
+
         $sites[$site->role] = array(
-          'title' => array(
-            '#type' => 'markup',
-            '#prefix' => '<h3>',
-            '#suffix' => '</h3>',
-            '#value' => t(ucwords($site->role)),
-            '#weight' => -10,
-          ),
           'links' => array(
-            '#prefix' => '<table class="usersitelist">',
+            '#prefix' => '<table class="usersitelist"><thead><tr><th colspan="3">' . $title . '</th></tr></thead>',
             '#suffix' => '</table>',
           ),
         );
@@ -451,11 +462,11 @@ function conglomerate_user($op, &$edit, &$account, $category) {
         '#type' => 'markup',
         '#prefix' => '<tr>',
         '#suffix' => '</tr>',
-        '#value' => '<td>' . l($site->domain, 'http://' . $site->domain) . '</td>',
+        '#value' => '<td class="domain">' . l($site->domain, 'http://' . $site->domain) . '</td>',
       );
 
       if ($site->role == 'editor') {
-        $sites[$site->role]['links'][$site->nid]['#value'] .= '<td>' . l(t('Create Content'), 'http://' . $site->domain . '/node/add') . '</td>';
+        $sites[$site->role]['links'][$site->nid]['#value'] .= '<td>' . l(t('Create Content'), 'http://' . $site->domain . '/node/add') . '</td><td></td>';
       }
 
       else if ($site->role == 'admin') {
@@ -467,6 +478,12 @@ function conglomerate_user($op, &$edit, &$account, $category) {
         $sites[$site->role]['links'][$site->nid]['#value'] .= '<td></td><td></td>';
       }
     }
+
+    $sites['createnew'] = array(
+      '#type' => 'markup',
+      '#value' => '<a href="' . $base_url . '/register-site" class="button">' . t('Create new site') . '</a>',
+      '#weight' => 10,
+    );
 
     unset($account->content['summary']);
     $account->content['sites'] = $sites;
