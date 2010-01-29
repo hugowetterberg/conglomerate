@@ -62,10 +62,8 @@ class ConglomerateContentResource {
    */
   public static function retrieve($nid) {
     $node = node_load($nid);
-    if ($node->type==$type) {
-      $node->uri = services_resource_uri(array($type, $node->nid));
-      return $node;
-    }
+    $node->uri = services_resource_uri(array('conglomerate-content', $node->nid));
+    return $node;
   }
 
   /**
