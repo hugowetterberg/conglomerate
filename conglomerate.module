@@ -291,105 +291,131 @@ function conglomerate_oauth_default_contexts() {
 }
 
 /**
- * Implementation of hook_services_endpoints().
+ * Implementation of hook_default_services_endpoint().
  */
-function conglomerate_services_endpoints() {
-  return array(
-    'conglomerate_login' => array(
-      'title' => 'Conglomerate login API',
-      'server' => 'rest_server',
-      'path' => 'login-api',
-      'authentication' => 'services_oauth',
-      'authentication_settings' => array(
-        'oauth_context' => 'conglomerate_login',
-      ),
-      'resources' => array(
-        'conglomerate-user' => array(
-          'alias' => 'user',
-          'actions' => array(
-            'info' => array(
-              'enabled' => TRUE,
-              'oauth_credentials' => 'token',
-              'oauth_authorization' => 'user_info',
-            ),
-          ),
-        ),
-      ),
+function conglomerate_default_services_endpoint() {
+  $endpoints = array();
+
+  $endpoint = new stdClass;
+  $endpoint->disabled = FALSE; /* Edit this to true to make a default endpoint disabled initially */
+  $endpoint->name = 'conglomerate_login';
+  $endpoint->title = 'Conglomerate login API';
+  $endpoint->server = 'rest_server';
+  $endpoint->path = 'login-api';
+  $endpoint->authentication = array(
+    'services_oauth' => array(
+      'context' => 'conglomerate_login',
     ),
-    'conglomerate' => array(
-      'title' => 'Conglomerate API',
-      'server' => 'rest_server',
-      'path' => 'api',
-      'authentication' => 'services_oauth',
-      'authentication_settings' => array(
-        'oauth_context' => 'conglomerate',
-      ),
-      'resources' => array(
-        'conglomerate-content' => array(
-          'alias' => 'content',
-          'operations' => array(
-            'create' => array(
-              'enabled' => TRUE,
-              'oauth_credentials' => 'token',
-              'oauth_authorization' => '*',
-            ),
-            'retrieve' => array(
-              'enabled' => TRUE,
-              'oauth_credentials' => 'unsigned_consumer',
-              'oauth_authorization' => 'read',
-            ),
-            'update' => array(
-              'enabled' => TRUE,
-              'oauth_credentials' => 'token',
-              'oauth_authorization' => '*',
-            ),
-            'delete' => array(
-              'enabled' => TRUE,
-              'oauth_credentials' => 'token',
-              'oauth_authorization' => '*',
-            ),
-            'index' => array(
-              'enabled' => TRUE,
-              'oauth_credentials' => 'unsigned_consumer',
-              'oauth_authorization' => 'read',
-            ),
-          ),
-        ),
-        'solr' => array(
-          'alias' => 'search',
-          'operations' => array(
-            'index' => array(
-              'enabled' => TRUE,
-              'preprocess' => '_conglomerate_modify_solr_search',
-              'oauth_credentials' => 'unsigned_consumer',
-              'oauth_authorization' => 'read',
-            ),
-          )
-        ),
-        'simplegeosearch' => array(
-          'alias' => 'geosearch',
-          'operations' => array(
-            'index' => array(
-              'enabled' => TRUE,
-              'preprocess' => '_conglomerate_modify_solr_search',
-              'oauth_credentials' => 'unsigned_consumer',
-              'oauth_authorization' => 'read',
-            ),
-          ),
-        ),
-        'conglomerate-user' => array(
-          'alias' => 'user',
-          'actions' => array(
-            'roleUpdate' => array(
-              'enabled' => TRUE,
-              'oauth_credentials' => 'token',
-              'oauth_authorization' => '*',
-            ),
+  );
+  $endpoint->resources = array(
+    'conglomerate-user' => array(
+      'alias' => 'user',
+      'actions' => array(
+        'info' => array(
+          'enabled' => 1,
+          'services_oauth' => array(
+            'credentials' => 'token',
+            'authorization' => 'user_info',
           ),
         ),
       ),
     ),
   );
+  $endpoints[$endpoint->name] = $endpoint;
+
+  $endpoint = new stdClass;
+  $endpoint->disabled = FALSE; /* Edit this to true to make a default endpoint disabled initially */
+  $endpoint->name = 'conglomerate';
+  $endpoint->title = 'Conglomerate API';
+  $endpoint->server = 'rest_server';
+  $endpoint->path = 'api';
+  $endpoint->authentication = array(
+    'services_oauth' => array(
+      'context' => 'conglomerate',
+    )
+  );
+  $endpoint->resources = array(
+    'conglomerate-content' => array(
+      'alias' => 'content',
+      'operations' => array(
+        'create' => array(
+          'enabled' => 1,
+          'services_oauth' => array(
+            'credentials' => 'token',
+            'authorization' => '*',
+          ),
+        ),
+        'retrieve' => array(
+          'enabled' => 1,
+          'services_oauth' => array(
+            'credentials' => 'unsigned_consumer',
+            'authorization' => 'read',
+          ),
+        ),
+        'update' => array(
+          'enabled' => 1,
+          'services_oauth' => array(
+            'credentials' => 'token',
+            'authorization' => '*',
+          ),
+        ),
+        'delete' => array(
+          'enabled' => 1,
+          'services_oauth' => array(
+            'credentials' => 'token',
+            'authorization' => '*',
+          ),
+        ),
+        'index' => array(
+          'enabled' => 1,
+          'services_oauth' => array(
+            'credentials' => 'unsigned_consumer',
+            'authorization' => 'read',
+          ),
+        ),
+      ),
+    ),
+    'conglomerate-user' => array(
+      'alias' => 'user',
+      'operations' => array(),
+      'actions' => array(
+        'roleUpdate' => array(
+          'enabled' => 1,
+          'services_oauth' => array(
+            'credentials' => 'token',
+            'authorization' => '*',
+          ),
+        ),
+      ),
+    ),
+    'simplegeosearch' => array(
+      'alias' => 'geosearch',
+      'operations' => array(
+        'index' => array(
+          'enabled' => 1,
+          'services_oauth' => array(
+            'credentials' => 'unsigned_consumer',
+            'authorization' => 'read',
+          ),
+        ),
+      ),
+    ),
+    'solr' => array(
+      'alias' => 'search',
+      'operations' => array(
+        'index' => array(
+          'enabled' => 1,
+          'services_oauth' => array(
+            'credentials' => 'unsigned_consumer',
+            'authorization' => 'read',
+          ),
+        ),
+      ),
+    ),
+  );
+  $endpoints[$endpoint->name] = $endpoint;
+
+  return $endpoints;
 }
 
 /**
