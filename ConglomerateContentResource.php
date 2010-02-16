@@ -198,6 +198,7 @@ class ConglomerateContentResource {
         $attr['starts'] = array('required' => TRUE);
         break;
     }
+    drupal_alter('conglomerate_node_write_attributes', $attr, $data, $source);
 
     // Transfer attributes from data
     foreach ($attr as $name => $info) {
