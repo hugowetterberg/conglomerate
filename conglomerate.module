@@ -80,7 +80,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
   $form['intro'] = array( // TODO: This text should be configurable in the admin interface. Either tt or some custom mechanism.
     '#title' => t('Introductory help text'),
     '#value' => t('Enter the following information to register a site on !domain. Once your site has been approved you will receive an email with information on how to use your new site. Everything but the site address can be changed later.', array(
-      '!domain' => l('skane.com', 'http://' . $base_domain),
+      '!domain' => l($base_domain, 'http://' . $base_domain),
     )),
     '#prefix' => '<p>',
     '#suffix' => '</p>',
@@ -102,7 +102,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
   $form['conglomerate_domain'] = array(
     '#type' => 'textfield',
     '#title' => t('Preferred site adress'),
-    '#description' => $custom_domain ? t('The domain for your site') : t('(ie. yourname.skane.com)'),
+    '#description' => $custom_domain ? t('The domain for your site') : t('Ie. yourname.' . variable_get('conglomerate_domain', 'domain.com') . '. Max 20 alphanumeric characters.'),
     '#default_value' => $domain,
     '#size' => 20,
     '#maxlength' => 20,
@@ -189,7 +189,7 @@ function _conglomerate_site_register_validate($node) {
     }
 
     if (!$node->terms_of_use_accepted && !user_access('conglomerate approve site')) {
-      form_set_error('terms_of_use_accepted', t('You have to accept the terms of use to create a site at skane.com.'));
+      form_set_error('terms_of_use_accepted', t('You have to accept the terms of use to create a site at domain.com.'));
     }
 
     $base_domain = variable_get('conglomerate_domain', '');
@@ -416,117 +416,6 @@ function conglomerate_default_services_endpoint() {
   $endpoints[$endpoint->name] = $endpoint;
 
   return $endpoints;
-}
-
-/**
- * Implementation of hook_user().
- */
-function conglomerate_user($op, &$edit, &$account, $category) {
-  if ($op == 'view') {
-    // Add css
-    drupal_add_css(drupal_get_path('theme', 'skane') . '/css/user.css');
-
-    // Defines role hierarchy, used to determine what to show
-    $roles = array(
-      'authenticated user' => 0,
-      'editor' => 1,
-      'admin' => 2,
-    );
-
-    // Get users role for each site he owns, can edit or has visited
-    $res = db_query("SELECT u.uid, u.role, s.nid, s.domain
-                     FROM {conglomerate_user_roles} AS u
-                     INNER JOIN {conglomerate_source} AS s ON s.nid=u.sid
-                     WHERE u.uid=%d
-                     ORDER BY domain",
-                     $account->uid);
-
-    $siteList = array();
-
-    // We order by domain, so this effectively means we check one site at a time
-    $tmp = '';
-    while ($row = db_fetch_object($res)) {
-      if ($tmp !== $row->domain) {
-        $tmp = $row->domain;
-      }
-
-      // Filter out roles with lower rank
-      if (!isset($siteList[$row->domain])) {
-        $siteList[$row->domain] = $row;
-      } else {
-        // Only keep row with highest ranking role
-        if ($roles[$siteList[$row->domain]->role] < $roles[$row->role]) {
-          $siteList[$row->domain] = $row;
-        }
-      }
-    }
-
-    // Sort sites
-    usort($siteList, '_conglomerate_rolesort');
-
-    $currentRole = '';
-    foreach ($siteList as $site) {
-      if ($currentRole !== $site->role) {
-        // Define section title
-        switch($site->role) {
-          case 'admin':
-            $title = t('Sites you can administrate');
-            $weight = -10;
-            break;
-
-          case 'editor':
-            $title = t('Sites you can create content on');
-            $weight = -5;
-            break;
-
-          default:
-            $title = t('Sites you have logged in to');
-            $weight = -1;
-            break;
-        }
-
-        // Create section
-        $sites[$site->role] = array(
-          'links' => array(
-            '#prefix' => '<table class="usersitelist"><thead><tr><th colspan="3">' . $title . '</th></tr></thead>',
-            '#suffix' => '</table>',
-            '#weight' => $weight,
-          ),
-        );
-        $currentRole = $site->role;
-      }
-
-      // Add links to section
-      $sites[$site->role]['links'][$site->nid] = array(
-        '#type' => 'markup',
-        '#prefix' => '<tr>',
-        '#suffix' => '</tr>',
-        '#value' => '<td class="domain">' . l($site->domain, 'http://' . $site->domain) . '</td>',
-      );
-
-      if ($site->role == 'editor') {
-        $sites[$site->role]['links'][$site->nid]['#value'] .= '<td>' . l(t('Create Content'), 'http://' . $site->domain . '/node/add') . '</td><td></td>';
-      }
-
-      else if ($site->role == 'admin') {
-        $sites[$site->role]['links'][$site->nid]['#value'] .= '<td>' . l(t('Create Content'), 'http://' . $site->domain . '/node/add') . '</td>';
-        $sites[$site->role]['links'][$site->nid]['#value'] .= '<td>' . l(t('Admin'), 'http://' . $site->domain . '/admin/build/skane') . '</td>';
-      }
-
-      else {
-        $sites[$site->role]['links'][$site->nid]['#value'] .= '<td></td><td></td>';
-      }
-    }
-
-    $sites['createnew'] = array(
-      '#type' => 'markup',
-      '#value' => '<a href="' . $base_url . '/register-site" class="button"><span>' . t('Create new site') . '</span></a>',
-      '#weight' => -10,
-    );
-
-    unset($account->content['summary']);
-    $account->content['sites'] = $sites;
-  }
 }
 
 /**
