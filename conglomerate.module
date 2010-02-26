@@ -84,6 +84,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
     )),
     '#prefix' => '<p>',
     '#suffix' => '</p>',
+    '#weight' => -20,
   );
 
   $domain = isset($node->conglomerate_domain) ? $node->conglomerate_domain : '';
@@ -102,7 +103,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
   $form['conglomerate_domain'] = array(
     '#type' => 'textfield',
     '#title' => t('Preferred site adress'),
-    '#description' => $custom_domain ? t('The domain for your site') : t('Ie. yourname.' . variable_get('conglomerate_domain', 'domain.com') . '. Max 20 alphanumeric characters.'),
+    '#description' => $custom_domain ? t('The domain for your site') : t('Ie. yourname.' . variable_get('conglomerate_domain', 'domain.com') . '. Max 20 charactes, only a-z and 0-9.'),
     '#default_value' => $domain,
     '#size' => 20,
     '#maxlength' => 20,
@@ -110,6 +111,9 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
     '#disabled' => !empty($node->conglomerate_site_id) || ($custom_domain && !user_access('conglomerate custom subsite url')),
   );
   $form['conglomerate_domain']['#required'] = !$form['conglomerate_domain']['#disabled'];
+
+  $form['title']['#description'] = t('This will be used as a header for your site.');
+  $form['body_field']['body']['#description'] = t('The site description is displayed in lists when you search for keywords or explore the tags. It\'s also taken into account by the editors when they approve new sites, so take some time to produce a good, concise description.');
 
   if (empty($node->conglomerate_site_id)) {
     if (user_access('administer conglomerate server')) {
