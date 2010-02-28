@@ -827,10 +827,10 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
           return array('title' => '', 'content' => '<img src="' . $base_url . '/' . drupal_get_path('theme', 'skane') . '/gfx/BRS.jpg" alt="Business Region Skåne." />');
 
         case 'orgnr':
-          return array('title' => 'Tourism in Skåne AB', 'content' => 'Org.nr: 556750-6398');
+          return array('title' => 'Business Region Skåne AB', 'content' => 'Org.nr: 556747-5198');
 
         case 'contact':
-          return array('title' => 'Kontakta oss', 'content' => 'Tourism in Skåne AB<br /> Stortorget 9, SE-211 22 Malmö<br /> Tel. +46 (0)40-623 98 00<br /> tourism@skane.com');
+          return array('title' => 'Kontakta oss', 'content' => 'Business Region Skåne AB<br />Stortorget 9, SE-211 22 Malmö<br />Tel. +46 (0)40-623 98 00<br />info@skane.com');
 
         case 'meta':
           return array('title' => '', 'content' => '<h3>   <img src="/sites/default/themes/skane/gfx/rss.jpg" alt="RSS" />Prenumerera &mdash; RSS </h3> <ul>   <li><a href="#">Användarvillkor</a></li>   <li><a href="#">PUL Personuppgiftslagen</a></li>   <li><a href="#">Vi använder cookies</a></li> </ul>');
