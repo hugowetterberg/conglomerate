@@ -695,53 +695,49 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
           return array('content' => '<img src="' . url(drupal_get_path('theme', 'skane')) . '/gfx/remove_this.jpg" alt="" class="test_image" />');
 
         case 'tags':
-          return array('content' => '<div class="tags"><h3>Etiketter</h3>
-    <a href="#">Lorem</a>
-    <a href="#">ipsum</a>
-    <a href="#">dolor</a>
-    <a href="#">consectetur</a>
-    <a href="#">sit</a>
-    <a href="#">amet</a>
-    <a href="#">adipisicing</a>
-    <a href="#">elit</a>
-    <a href="#">sed</a>
-    <a href="#">do</a>
-    <a href="#">eiusmod</a>
-    <a href="#">tempor</a>
-    <a href="#">incididunt</a>
-    <a href="#">labore</a>
-    <a href="#">Lorem</a>
-    <a href="#">ipsum</a>
-    <a href="#">dolor</a>
-    <a href="#">consectetur</a>
-    <a href="#">sit</a>
-    <a href="#">amet</a>
-    <a href="#">adipisicing</a>
-    <a href="#">elit</a>
-    <a href="#">sed</a>
-    <a href="#">do</a>
-    <a href="#">eiusmod</a>
-    <a href="#">tempor</a>
-    <a href="#">incididunt</a>
-    <a href="#">labore</a>
-    <a href="#">eiusmod</a>
-    <a href="#">tempor</a>
-    <a href="#">incididunt</a>
-    <a href="#">labore</a>
-    <a href="#">Lorem</a>
-    <a href="#">ipsum</a>
-    <a href="#">dolor</a>
-    <a href="#">consectetur</a>
-    <a href="#">sit</a>
-    <a href="#">amet</a>
-    <a href="#">adipisicing</a>
-    <a href="#">elit</a>
-    <a href="#">sed</a>
-    <a href="#">do</a>
-    <a href="#">eiusmod</a>
-    <a href="#">tempor</a>
-    <a href="#">incididunt</a>
-    <a href="#">labore</a>
+          return array('content' => '<div class="tags"><h3>' . t('Tags') . '</h3>
+    <a href="#">Här</a>
+    <a href="#">kommer</a>
+    <a href="#">olika</a>
+    <a href="#">ettiketter</a>
+    <a href="#">som</a>
+    <a href="#">finns</a>
+    <a href="#">på</a>
+    <a href="#">nya</a>
+    <a href="#">skane.com</a>
+    <a href="#">att</a>
+    <a href="#">dyka</a>
+    <a href="#">upp.</a>
+    <a href="#">Listan</a>
+    <a href="#">visar</a>
+    <a href="#">vilka</a>
+    <a href="#">nyckelord</a>
+    <a href="#">som</a>
+    <a href="#">är</a>
+    <a href="#">de</a>
+    <a href="#">vanligaste</a>
+    <a href="#">i</a>
+    <a href="#">sökningar</a>
+    <a href="#">och</a>
+    <a href="#">på</a>
+    <a href="#">webbplatserna</a>
+    <a href="#">inom</a>
+    <a href="#">vår</a>
+    <a href="#">skånska</a>
+    <a href="#">nätfamilj.</a>
+    <a href="#">De</a>
+    <a href="#">vanligaste</a>
+    <a href="#">orden</a>
+    <a href="#">blir</a>
+    <a href="#">stora</a>
+    <a href="#">och</a>
+    <a href="#">så</a>
+    <a href="#">blir</a>
+    <a href="#">de</a>
+    <a href="#">mindre</a>
+    <a href="#">i</a>
+    <a href="#">fallande</a>
+    <a href="#">skala.</a>
 </div>');
 
         case 'hotels':
