@@ -827,7 +827,7 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
           return array('title' => '', 'content' => '<img src="' . $base_url . '/' . drupal_get_path('theme', 'skane') . '/gfx/BRS.jpg" alt="Business Region Skåne." />');
 
         case 'orgnr':
-          return array('title' => 'Business Region Skåne AB', 'content' => 'Org.nr: 556747-5198 ');
+          return array('title' => 'Business Region Skåne AB', 'content' => 'Org.nr: 556747-5198');
 
         case 'contact':
           return array('title' => 'Kontakta oss', 'content' => 'Business Region Skåne AB<br />Stortorget 9, SE-211 22 Malmö<br />Tel. +46 (0)40-623 98 00<br />info@skane.com');
