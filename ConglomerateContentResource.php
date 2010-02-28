@@ -195,9 +195,13 @@ class ConglomerateContentResource {
     );
     switch ($data->type) {
       case 'event':
-        $attr['starts'] = array('required' => TRUE);
+        $attr['starts'] = array(
+          'adapt' => 'adaptStartTime',
+          'required' => TRUE,
+        );
         break;
     }
+    drupal_alter('conglomerate_node_write_attributes', $attr, $data, $source);
 
     // Transfer attributes from data
     foreach ($attr as $name => $info) {

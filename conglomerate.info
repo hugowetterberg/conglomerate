@@ -4,6 +4,9 @@ description = Allows a site to act as a central directory for several subsites
 dependencies[] = services
 dependencies[] = rest_server
 dependencies[] = rest_client
+dependencies[] = features
+dependencies[] = number
+dependencies[] = optionwidgets
 dependencies[] = rest_client_oauth
 dependencies[] = node_resource
 dependencies[] = services_oop
@@ -11,4 +14,9 @@ dependencies[] = services_oauth
 dependencies[] = solr_resource
 dependencies[] = simplegeo_search
 dependencies[] = query_builder
+
+features[content][] = "conglomerate-field_optional"
+features[content][] = "conglomerate_block-field_weight"
+features[node][] = "conglomerate_block"
+
 core = 6.x

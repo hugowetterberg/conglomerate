@@ -1,6 +1,9 @@
 <?php
 // $Id$
 
+// Include features.
+include_once('conglomerate.features.inc');
+
 /**
  * Implementation of hook_autoload_info().
  */
@@ -14,6 +17,9 @@ function conglomerate_autoload_info() {
     ),
     'ConglomerateUserResource' => array(
       'file' => 'ConglomerateUserResource.php',
+    ),
+    'ConglomerateBlockResource' => array(
+      'file' => 'ConglomerateBlockResource.php',
     ),
   );
 }
@@ -254,6 +260,7 @@ function conglomerate_services_resources() {
     // Conglomerate resource
     'conglomerate-content' => ServicesOop::definitionFromClass('ConglomerateContentResource'),
     'conglomerate-user' => ServicesOop::definitionFromClass('ConglomerateUserResource'),
+    'conglomerate-block' => ServicesOop::definitionFromClass('ConglomerateBlockResource'),
   );
   return $res;
 }
@@ -343,6 +350,18 @@ function conglomerate_default_services_endpoint() {
     )
   );
   $endpoint->resources = array(
+    'conglomerate-block' => array(
+      'alias' => 'block',
+      'operations' => array(
+        'index' => array(
+          'enabled' => 1,
+          'services_oauth' => array(
+            'credentials' => 'none',
+            'authorization' => 'read',
+          ),
+        ),
+      ),
+    ),
     'conglomerate-content' => array(
       'alias' => 'content',
       'operations' => array(
@@ -401,6 +420,7 @@ function conglomerate_default_services_endpoint() {
       'operations' => array(
         'index' => array(
           'enabled' => 1,
+          'preprocess' => array('_conglomerate_modify_solr_search'),
           'services_oauth' => array(
             'credentials' => 'unsigned_consumer',
             'authorization' => 'read',
@@ -605,8 +625,34 @@ function conglomerate_apachesolr_update_index(&$doc, $node) {
   }
 }
 
-function _conglomerate_modify_solr_search(&$parameters) {
-  // Do stuff to enforce sensible restrictions
+function _conglomerate_modify_solr_search(&$args, &$controller) {
+  $oauth_consumer = services_get_server_info('oauth_consumer');
+  if ($oauth_consumer) {
+    $source = conglomerate_source_from_consumer($oauth_consumer);
+    if ($source) {
+      $p = $args[3];
+      if (!empty($p['inside_area']) && $p['inside_area'] == 'yes') {
+        $has_area = db_result(db_query("SELECT nid FROM {simple_geo_area}
+          WHERE nid = %d AND type='node'", array(
+              ':nid' => $source->nid,
+            )));
+        // Disregard the inside_area parameter if the source haven't defined
+        // an area.
+        if ($has_area) {
+          $args[0] .= ' AND im_simple_geo_area:' . $source->nid;
+        }
+      }
+      if (!empty($p['local_content'])) {
+        switch ($p['local_content']) {
+          case 'only':
+            $args[0] .= ' AND is_conglomerate_source:' . $source->sid;
+            break;
+          case 'exclude':
+            $args[0] .= ' AND -is_conglomerate_source:' . $source->sid;
+        }
+      }
+    }
+  }
 }
 
 /**
