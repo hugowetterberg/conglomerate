@@ -79,7 +79,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
 
   $form['intro'] = array( // TODO: This text should be configurable in the admin interface. Either tt or some custom mechanism.
     '#title' => t('Introductory help text'),
-    '#value' => t('Enter the following information to register a site on !domain. Once your site has been approved you will receive an email with information on how to use your new site. Everything but the site address can be changed later.', array(
+    '#value' => t('Enter the following information to register a site on !domain. Once your site has been approved you will receive an email with information on how to use your new site. Everything but the site address and default language can be changed later.', array(
       '!domain' => l($base_domain, 'http://' . $base_domain),
     )),
     '#prefix' => '<p>',
