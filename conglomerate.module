@@ -163,21 +163,25 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
       '#value' => 'Placeholder for a short terms of use text',
       '#prefix' => '<p>',
       '#suffix' => '</p>',
+      '#weight' => 30,
     );
 
     $form['terms_of_use_accepted'] = array(
       '#type' => 'checkbox',
       '#title' => t('I\'ve read and accepted the terms of use'),
       '#default_value' => 0,
+      '#weight' => 31,
     );
   }
 
   $form['donetext'] = array(
-    '#value' => t('Click Save to send your registration to us for review. You will receive an email as soon as your site is approved.'),
+    '#value' => t('Use the map above to specify a position and, if you want, an area that your site is about.<br /><br />Click Save to send your registration to us for review. You will receive an email as soon as your site is approved.'),
     '#prefix' => '<p>',
     '#suffix' => '</p>',
     '#weight' => 50,
   );
+
+  $form['simple_geo']['simple_geo_position']['#required'] = TRUE;
 
   // Get rid of node form cruft
   $form['body_field']['teaser_js']['#access'] = FALSE;
