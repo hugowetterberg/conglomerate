@@ -778,7 +778,7 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
 </ul>');
 
         case 'logo':
-          return array('title' => '', 'content' => 'TOURISM IN SKÅNE LOGO ETC');
+          return array('title' => '', 'content' => '<img src="' . drupal_get_path('theme', 'skane') . '/gfx/BRS.jpg" alt="Business Region Skåne." />');
 
         case 'orgnr':
           return array('title' => 'Tourism in Skåne AB', 'content' => 'Org.nr: 556750-6398');
