@@ -699,7 +699,7 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
     <a href="#">Här</a>
     <a href="#">kommer</a>
     <a href="#">olika</a>
-    <a href="#">ettiketter</a>
+    <a href="#">etiketter</a>
     <a href="#">som</a>
     <a href="#">finns</a>
     <a href="#">på</a>
