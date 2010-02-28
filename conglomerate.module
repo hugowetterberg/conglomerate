@@ -1,6 +1,9 @@
 <?php
 // $Id$
 
+// Include features.
+include_once('conglomerate.features.inc');
+
 /**
  * Implementation of hook_autoload_info().
  */
@@ -14,6 +17,9 @@ function conglomerate_autoload_info() {
     ),
     'ConglomerateUserResource' => array(
       'file' => 'ConglomerateUserResource.php',
+    ),
+    'ConglomerateBlockResource' => array(
+      'file' => 'ConglomerateBlockResource.php',
     ),
   );
 }
@@ -254,6 +260,7 @@ function conglomerate_services_resources() {
     // Conglomerate resource
     'conglomerate-content' => ServicesOop::definitionFromClass('ConglomerateContentResource'),
     'conglomerate-user' => ServicesOop::definitionFromClass('ConglomerateUserResource'),
+    'conglomerate-block' => ServicesOop::definitionFromClass('ConglomerateBlockResource'),
   );
   return $res;
 }
@@ -343,6 +350,18 @@ function conglomerate_default_services_endpoint() {
     )
   );
   $endpoint->resources = array(
+    'conglomerate-block' => array(
+      'alias' => 'block',
+      'operations' => array(
+        'index' => array(
+          'enabled' => 1,
+          'services_oauth' => array(
+            'credentials' => 'none',
+            'authorization' => 'read',
+          ),
+        ),
+      ),
+    ),
     'conglomerate-content' => array(
       'alias' => 'content',
       'operations' => array(
