@@ -163,22 +163,20 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
     '#disabled' => !empty($node->conglomerate_site_id),
   );
 
-  if (!user_access('conglomerate approve site')) {
-    $form['terms_of_use_text'] = array( // TODO: This text should be configurable in the admin interface. Either tt or some custom mechanism.
-      '#title' => t('Terms of use text'),
-      '#value' => 'Placeholder for a short terms of use text',
-      '#prefix' => '<p>',
-      '#suffix' => '</p>',
-      '#weight' => 30,
-    );
+  $form['terms_of_use_text'] = array(
+    '#title' => '',
+    '#value' => l(t('Terms of Use'), 'terms', array(attributes => array('target' => '_blank'))),
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
+    '#weight' => 30,
+  );
 
-    $form['terms_of_use_accepted'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('I\'ve read and accepted the terms of use'),
-      '#default_value' => 0,
-      '#weight' => 31,
-    );
-  }
+  $form['terms_of_use_accepted'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('I\'ve read and accepted the terms of use'),
+    '#default_value' => 0,
+    '#weight' => 31,
+  );
 
   $form['donetext'] = array(
     '#value' => t('Use the map above to specify a position and, if you want, an area that your site is about.<br /><br />Click Save to send your registration to us for review. You will receive an email as soon as your site is approved.'),
@@ -833,7 +831,7 @@ function conglomerate_block($op = 'list', $delta = 0, $edit = array()) {
           return array('title' => 'Kontakta oss', 'content' => 'Business Region Skåne AB<br />Stortorget 9, SE-211 22 Malmö<br />Tel. +46 (0)40-623 98 00<br />info@skane.com');
 
         case 'meta':
-          return array('title' => '', 'content' => '<h3>   <img src="/sites/default/themes/skane/gfx/rss.jpg" alt="RSS" />Prenumerera &mdash; RSS </h3> <ul>   <li><a href="#">Användarvillkor</a></li>   <li><a href="#">PUL Personuppgiftslagen</a></li>   <li><a href="#">Vi använder cookies</a></li> </ul>');
+          return array('title' => '', 'content' => '<h3>   <img src="/sites/default/themes/skane/gfx/rss.jpg" alt="RSS" />Prenumerera &mdash; RSS </h3> <ul>   <li><a href="#">' . l(t('Terms of Use'), 'terms') . '</a></li>   <li><a href="#">PUL Personuppgiftslagen</a></li>   <li><a href="#">Vi använder cookies</a></li> </ul>');
 
         case 'language':
           return array('title' => 'Språk', 'content' => '<ul><li class="active"><a href="#">På svenska</a></li><li><a href="#">In English</a></li><li><a href="#">vers le français</a></li><li><a href="#">Español</a></li><li><a href="#">Tyska</a></li><li><a href="#">Esperanto</a></li></ul>');
