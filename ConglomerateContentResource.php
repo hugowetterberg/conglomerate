@@ -256,10 +256,18 @@ class ConglomerateContentResource {
    * Format the start date so that it's understood by CCK.
    */
   public static function adaptStartTime(&$node) {
-    $node->field_starts = array(array(
-      'value' => date('c', $node->starts)
-    ));
+    $starts = $node->starts;
     unset($node->starts);
+
+    if (!is_array($starts)) {
+      $starts = array($starts);
+    }
+
+    foreach ($starts as $time) {
+      $node->field_starts[] = array(
+        'value' => date('c', $time),
+      );
+    }
   }
 
   /**
