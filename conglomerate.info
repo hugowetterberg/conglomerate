@@ -15,7 +15,7 @@ dependencies[] = solr_resource
 dependencies[] = simplegeo_search
 dependencies[] = query_builder
 
-features[content][] = "conglomerate-field_optional"
+features[content][] = "conglomerate_block-field_optional"
 features[content][] = "conglomerate_block-field_weight"
 features[node][] = "conglomerate_block"
 
