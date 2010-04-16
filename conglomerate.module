@@ -264,44 +264,71 @@ function conglomerate_services_resources() {
 }
 
 /**
- * Implementation of hook_oauth_default_contexts().
+ * Implementation of hook_default_oauth_common_context().
  */
-function conglomerate_oauth_default_contexts() {
-  return array(
-    'conglomerate_login' => array(
-      'name' => 'Conglomerate login',
-      'title' => 'Login to @appname',
-      'message' => 'Hi @user! Click on the "login" button to log in to @appname.',
-      'warning' => 'Click here if you didn\'t ask to be logged in to @appname.',
-      'default_authorization_levels' => array('user_info'),
-      'disable_auth_level_selection' => TRUE,
-      'immediate_redirect' => TRUE,
-      'deny_access_title' => 'Cancel',
-      'grant_access_title' => 'Login',
-      'access_token_lifetime' => 120,
-      'authorization_levels' => array(
-        'user_info' => array(
-          'title' => 'Yes, I want to log in to @appname as @user',
-          'description' => 'This will log you in to @appname and give it access to details like your username and email, but not to your password.',
-        ),
-      )
+function conglomerate_default_oauth_common_context() {
+  $contexts = array();
+
+  $context = new stdClass;
+  $context->disabled = FALSE; /* Edit this to true to make a default context disabled initially */
+  $context->name = 'conglomerate_login';
+  $context->title = 'Conglomerate login';
+  $context->authorization_options = array(
+    'access_token_lifetime' => '120',
+    'page_title' => 'Login to @appname',
+    'message' => 'Hi @user! Click on the "login" button to log in to @appname.',
+    'warning' => 'Click here if you didn\'t ask to be logged in to @appname.',
+    'deny_access_title' => 'Cancel',
+    'grant_access_title' => 'Login',
+    'disable_auth_level_selection' => 1,
+    'signature_methods' => array(
+      '0' => 'HMAC-SHA1',
+      '1' => 'HMAC-SHA256',
+      '2' => 'HMAC-SHA384',
+      '3' => 'HMAC-SHA512',
     ),
-    'conglomerate' => array(
-      'name' => 'Conglomerate',
-      'authorization_levels' => array(
-        '*' => array(
-          'title' => 'Yes, I want to connect @appname to @sitename',
-          'description' => 'This will allow your site @appname to push content to @sitename',
-          'weight' => -1,
-        ),
-        'read' => array(
-          'title' => 'I want to connect, but just to get stuff from @sitename',
-          'description' => 'This will allow @appname to fetch content from @sitename, but it will not allow any information to be pushed to @sitename.',
-          'weight' => 0,
-        ),
-      ),
-    )
+    'default_authorization_levels' => array(
+      '0' => 'user_info',
+    ),
   );
+  $context->authorization_levels = array(
+    'user_info' => array(
+      'name' => 'user_info',
+      'title' => 'Yes, I want to log in to @appname as @user',
+      'description' => 'This will log you in to @appname and give it access to details like your username and email, but not to your password.',
+      'default' => 1,
+      'delete' => 0,
+    ),
+  );
+  $contexts[$context->name] = $context;
+
+  $context = new stdClass;
+  $context->disabled = FALSE; /* Edit this to true to make a default context disabled initially */
+  $context->name = 'conglomerate';
+  $context->title = 'Conglomerate';
+  $context->authorization_options = array(
+    'access_token_lifetime' => 1200,
+    'signature_methods' => array(
+      '0' => 'HMAC-SHA1',
+      '1' => 'HMAC-SHA256',
+      '2' => 'HMAC-SHA384',
+      '3' => 'HMAC-SHA512',
+    ),
+    'default_authorization_levels' => array(
+      '0' => '*',
+    ),
+  );
+  $context->authorization_levels = array(
+    '*' => array(
+      'name' => '*',
+      'title' => 'Yes, I want to connect @appname to @sitename',
+      'description' => 'This will allow your site @appname to push content to @sitename',
+      'default' => 1,
+      'delete' => 0,
+    ),
+  );
+  $contexts[$context->name] = $context;
+  return $contexts;
 }
 
 /**
