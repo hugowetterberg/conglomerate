@@ -345,7 +345,7 @@ function conglomerate_default_services_endpoint() {
   $endpoint->path = 'login-api';
   $endpoint->authentication = array(
     'services_oauth' => array(
-      'context' => 'conglomerate_login',
+      'oauth_context' => 'conglomerate_login',
     ),
   );
   $endpoint->resources = array(
@@ -372,7 +372,7 @@ function conglomerate_default_services_endpoint() {
   $endpoint->path = 'api';
   $endpoint->authentication = array(
     'services_oauth' => array(
-      'context' => 'conglomerate',
+      'oauth_context' => 'conglomerate',
     )
   );
   $endpoint->resources = array(
