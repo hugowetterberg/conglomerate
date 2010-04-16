@@ -274,6 +274,7 @@ function conglomerate_default_oauth_common_context() {
   $context->name = 'conglomerate_login';
   $context->title = 'Conglomerate login';
   $context->authorization_options = array(
+    'automatic_authorization' => TRUE,
     'access_token_lifetime' => '120',
     'page_title' => 'Login to @appname',
     'message' => 'Hi @user! Click on the "login" button to log in to @appname.',
