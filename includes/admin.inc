@@ -257,7 +257,7 @@ function _conglomerate_oauth_tokens() {
       ORDER BY created DESC", array(
         ':consumer_key' => $consumer_key,
       ));
-    while ($token = DrupalOAuthToken::fromResult($token_res)) {
+    while ($token = DrupalOAuthToken::fromResult($token_res, FALSE)) {
       $tokens[$token->type][] = $token;
     }
   }
