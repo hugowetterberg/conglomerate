@@ -625,6 +625,13 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   }
 }
 
+function conglomerate_source_load($sid) {
+  return db_fetch_object(db_query("SELECT * FROM {conglomerate_source}
+    WHERE sid = %d", array(
+      ':sid' => $sid,
+  )));
+}
+
 /**
  * Loads source information when given a oauth consumer object or key.
  *
