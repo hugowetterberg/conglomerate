@@ -267,6 +267,7 @@ class ConglomerateContentResource {
       $starts = array($starts);
     }
 
+    $node->field_starts = array();
     foreach ($starts as $time) {
       $node->field_starts[] = array(
         'value' => date('c', $time),
