@@ -189,6 +189,10 @@ class ConglomerateContentResource {
         'required' => TRUE,
         'adapt' => 'adaptUrl',
       ),
+      'fulltext' => array(
+        'required' => FALSE,
+        'adapt' => 'adaptFulltext',
+      ),
       'type' => array('required' => TRUE),
       'language' => array('required' => TRUE),
       'comments' => array('required' => FALSE),
@@ -268,6 +272,16 @@ class ConglomerateContentResource {
         'value' => date('c', $time),
       );
     }
+  }
+
+  /**
+   * Format the full-text field so that it's understood by CCK.
+   */
+  public static function adaptFulltext(&$node) {
+    $node->field_fulltext = array(array(
+      'value' => $node->fulltext,
+    ));
+    unset($node->fulltext);
   }
 
   /**
