@@ -177,6 +177,10 @@ class ConglomerateContentResource {
         'required' => FALSE,
         'adapt' => 'adaptTags',
       ),
+      'metadata' => array(
+        'required' => FALSE,
+        'to' => 'conglomerate_metadata',
+      ),
       'picture' => array(
         'required' => FALSE,
         'adapt' => 'adaptPicture',

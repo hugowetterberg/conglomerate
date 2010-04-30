@@ -499,19 +499,23 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     $update = NULL;
     switch ($op) {
       case 'update':
-        $update = array('nid');
       case 'insert':
         if (isset($node->conglomerate_source)) {
+          $exists = db_result(db_query("SELECT COUNT(nid) FROM {conglomerate_node_source} WHERE nid=%d", array(
+            ':nid' => $node->nid,
+          )));
+          $update = $exists ? array('nid') : array();
           $record = array(
             'nid' => $node->nid,
             'sid' => $node->conglomerate_source,
             'duplicate_of' => isset($node->conglomerate_duplicate_of) ? $node->conglomerate_duplicate_of : 0,
+            'metadata' => $node->conglomerate_metadata,
           );
           drupal_write_record('conglomerate_node_source', $record, $update);
         }
       break;
       case 'load':
-        $info = db_fetch_object(db_query("SELECT sid, duplicate_of FROM {conglomerate_node_source}
+        $info = db_fetch_object(db_query("SELECT sid, duplicate_of, metadata FROM {conglomerate_node_source}
           WHERE nid = %d",
             array(
               ':nid' => $node->nid,
@@ -520,6 +524,7 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
           return array(
             'conglomerate_source' => $info->sid,
             'conglomerate_duplicate_of' => $info->duplicate_of,
+            'conglomerate_metadata' => $info->metadata ? unserialize($info->metadata) : NULL,
           );
         }
         break;

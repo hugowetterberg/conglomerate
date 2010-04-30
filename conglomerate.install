@@ -77,6 +77,12 @@ function conglomerate_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'metadata' => array(
+        'description' => t('Content metadata.'),
+        'type'        => 'text',
+        'not null'    => TRUE,
+        'serialize'   => TRUE,
+      ),
     ),
     'primary key' => array('nid'),
     'index' => array(
@@ -163,6 +169,19 @@ function conglomerate_update_6002() {
       ),
     )
   );
+
+  return $ret;
+}
+
+function conglomerate_update_6003() {
+  $ret = array();
+
+  db_add_field($ret, 'conglomerate_node_source', 'metadata', array(
+    'description' => t('Content metadata.'),
+    'type'        => 'text',
+    'not null'    => TRUE,
+    'serialize'   => TRUE,
+  ));
 
   return $ret;
 }
