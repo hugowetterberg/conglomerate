@@ -253,6 +253,18 @@ class ConglomerateContentResource {
    */
   public static function adaptTags(&$node) {
     $tag_vid = variable_get('conglomerate_tag_vid', 1);
+    if ($tag_vid && !empty($node->taxonomy)) {
+      $remove = array();
+      foreach ($node->taxonomy as $tid => $term) {
+        if ($term->vid == $tag_vid) {
+          $remove[] = $tid;
+        }
+      }
+      foreach ($remove as $tid) {
+        unset($node->taxonomy[$tid]);
+      }
+    }
+
     if ($tag_vid && isset($node->tags)) {
       $tags = preg_split('/(?:,?\s+)|(?:[,])/', $node->tags);
       $node->taxonomy['tags'][$tag_vid] = join($tags, ', ');
