@@ -266,8 +266,7 @@ class ConglomerateContentResource {
     }
 
     if ($tag_vid && isset($node->tags)) {
-      $tags = preg_split('/(?:,?\s+)|(?:[,])/', $node->tags);
-      $node->taxonomy['tags'][$tag_vid] = join($tags, ', ');
+      $node->taxonomy['tags'][$tag_vid] = $node->tags;
     }
     unset($node->tags);
   }
