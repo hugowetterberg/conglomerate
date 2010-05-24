@@ -491,6 +491,24 @@ function _conglomerate_rolesort($a, $b) {
     return ($roles[$a->role] > $roles[$b->role]) ? 1 : -1;
 }
 
+function conglomerate_node_information($nid, $prefix = TRUE) {
+  $info = db_fetch_object(db_query("SELECT sid, duplicate_of, metadata FROM {conglomerate_node_source}
+    WHERE nid = %d",
+      array(
+        ':nid' => $nid,
+  )));
+  $result = array();
+  if ($info) {
+    $prefix = $prefix ? 'conglomerate_' : '';
+    $result = array(
+      $prefix . 'source' => $info->sid,
+      $prefix . 'duplicate_of' => $info->duplicate_of,
+      $prefix . 'metadata' => $info->metadata ? unserialize($info->metadata) : NULL,
+    );
+  }
+  return $result;
+}
+
 /**
  * Implementation of hook_nodeapi().
  */
@@ -515,18 +533,7 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         }
       break;
       case 'load':
-        $info = db_fetch_object(db_query("SELECT sid, duplicate_of, metadata FROM {conglomerate_node_source}
-          WHERE nid = %d",
-            array(
-              ':nid' => $node->nid,
-        )));
-        if ($info) {
-          return array(
-            'conglomerate_source' => $info->sid,
-            'conglomerate_duplicate_of' => $info->duplicate_of,
-            'conglomerate_metadata' => $info->metadata ? unserialize($info->metadata) : NULL,
-          );
-        }
+        return conglomerate_node_information($node->nid);
         break;
     }
   }
