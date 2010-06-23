@@ -588,15 +588,6 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         }
         break;
       case 'load':
-        // Load tags
-        $tags = taxonomy_node_get_terms_by_vocabulary($node, variable_get('conglomorate_tag_vocabulary', 0));
-        $tagsArray = array();
-        foreach ($tags as $tag) {
-          $tagsArray[] = $tag->name;
-        }
-        $tags = array();
-        $tags[variable_get('conglomorate_tag_vocabulary', 0)] = join(', ', $tagsArray);
-
         $info = db_fetch_object(db_query("SELECT sid, domain, oauth_consumer, config FROM {conglomerate_source}
           WHERE nid = %d",
             array(
@@ -612,13 +603,13 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
               }
             }
           }
+
           return array(
             'conglomerate_site_id' => $info->sid,
             'conglomerate_domain' => $info->domain,
             'conglomerate_oauth_consumer' => $info->oauth_consumer,
             'default_language' => $config['default_language'],
             'enabled_languages' => $config['enabled_languages'],
-            'taxonomy' => array('tags' => $tags),
           );
         }
         break;
