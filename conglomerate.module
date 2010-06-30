@@ -179,7 +179,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
   );
 
   $form['donetext'] = array(
-    '#value' => t('Use the map above to specify a position and, if you want, an area that your site is about.<br /><br />Click Save to send your registration to us for review. You will receive an email as soon as your site is approved.'),
+    '#value' => t('Use the map above to specify a position that your site relates to.<br /><br />Click Save to send your registration to us for review. You will receive an email as soon as your site is approved.'),
     '#prefix' => '<p>',
     '#suffix' => '</p>',
     '#weight' => 50,
