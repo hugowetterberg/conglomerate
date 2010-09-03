@@ -120,6 +120,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
 
   $form['title']['#description'] = t('This will be used as a header for your site.');
   $form['body_field']['body']['#description'] = t('The site description is displayed in lists when you search for keywords or explore the tags. It\'s also taken into account by the editors when they approve new sites, so take some time to produce a good, concise description.');
+	$form['body_field']['body']['#required'] = TRUE;
 
   if (empty($node->conglomerate_site_id)) {
     if (user_access('administer conglomerate server')) {
