@@ -208,6 +208,12 @@ class ConglomerateContentResource {
           'required' => TRUE,
         );
         break;
+			case 'subpage':
+				$attr['searchable'] = array(
+					'adapt' =>'adaptSearchable',
+					'required' => TRUE,
+				);
+				break;
     }
     drupal_alter('conglomerate_node_write_attributes', $attr, $data, $source);
 
@@ -329,5 +335,12 @@ class ConglomerateContentResource {
       $node = $args[0];
     }
     return node_access($op, $node);
+  }
+
+	public static function adaptSearchable(&$node) {
+    $node->field_searchable = array(array(
+      'value' => $node->searchable,
+    ));
+    unset($node->searchable);
   }
 }
