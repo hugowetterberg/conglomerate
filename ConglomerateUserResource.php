@@ -47,7 +47,7 @@ class ConglomerateUserResource {
       $sid = $site->nid;
     }
 
-    if ($result !== FALSE) {
+    if ($result !== FALSE && $info->roles != NULL) {
       // Delete old roles (if any) to avoid duplicates
       db_query("DELETE FROM {conglomerate_user_roles} WHERE uid=%d AND sid=%d", $uid, $sid);
 
