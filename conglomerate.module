@@ -79,25 +79,61 @@ function conglomerate_menu() {
   return $menu;
 }
 
-function conglomerate_form_site_node_form_alter($form, $form_state) {
+/**
+ * Implementation of hook_node_form_alter().
+ */
+function conglomerate_form_site_node_form_alter(&$form, $form_state) {
+  global $language;
   $base_domain = variable_get('conglomerate_domain', '');
   $node = $form['#node'];
 
-  $form['intro'] = array( // TODO: This text should be configurable in the admin interface. Either tt or some custom mechanism.
-    '#title' => t('Introductory help text'),
-    '#value' => t('Enter the following information to register a site on !domain. Once your site has been approved you will receive an email with information on how to use your new site. Everything but the site address and default language can be changed later.', array(
-      '!domain' => l($base_domain, 'http://' . $base_domain),
-    )),
-    '#prefix' => '<p>',
-    '#suffix' => '</p>',
-    '#weight' => -20,
-  );
+  // Check if we're translating a site
+  $translation_mode = FALSE;
+  if ($node->translation_source) {
+    $translation_mode = TRUE;
+
+    $form['#after_build'][] = '_conglomerate_form_site_hide_geo';
+
+    // Get enabled languages for this site
+    $site_languages = $node->translation_source->enabled_languages;
+    $target_language = strip_tags($_GET['language']);
+  }
+
+  // Check if we're in edit mode
+  $edit_mode = FALSE;
+  if ($node->nid) {
+    $edit_mode = TRUE;
+  }
+
+  // Hide help text if in translation mode
+  if (!$translation_mode) {
+    $form['intro'] = array(
+      '#title' => t('Introductory help text'),
+      '#value' => t('Enter the following information to register a site on !domain. Once your site has been approved you will receive an email with information on how to use your new site. Everything but the site address and default language can be changed later.', array(
+        '!domain' => l($base_domain, 'http://' . $base_domain),
+      )),
+      '#prefix' => '<p>',
+      '#suffix' => '</p>',
+      '#weight' => -20,
+    );
+  }
 
   $domain = isset($node->conglomerate_domain) ? $node->conglomerate_domain : '';
   $custom_domain = FALSE;
-  if (strpos($domain, $base_domain) !== FALSE) {
+  // Calculate URL for translated node
+  if ($translation_mode) {
+    // If site has target translation language use it, else fall back on default language
+    if (in_array($target_language, $site_languages)) {
+      $domain = $node->translation_source->conglomerate_domain . '/' . $target_language;
+    } else {
+      $domain = $node->translation_source->conglomerate_domain . '/' . $node->translation_source->default_language;
+    }
+  }
+  elseif (strpos($domain, $base_domain) !== FALSE) {
     $domain = drupal_substr($domain, 0, drupal_strlen($domain) - drupal_strlen($base_domain) - 1);
   }
+
+  // Get site ID for use when updating
   if (!empty($node->conglomerate_site_id)) {
     $form['conglomerate_site_id'] = array(
       '#type' => 'value',
@@ -122,7 +158,7 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
   $form['body_field']['body']['#description'] = t('The site description is displayed in lists when you search for keywords or explore the tags. It\'s also taken into account by the editors when they approve new sites, so take some time to produce a good, concise description.');
 	$form['body_field']['body']['#required'] = TRUE;
 
-  if (empty($node->conglomerate_site_id)) {
+  if (empty($node->conglomerate_site_id) && !$translation_mode) {
     if (user_access('administer conglomerate server')) {
       $form['conglomerate_devel_platform'] = array(
         '#type' => 'checkbox',
@@ -133,58 +169,71 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
     }
   }
 
+  // Get enabled languages
   $default_languages = variable_get('conglomerate_default_languages', array());
   $lang_options = array();
-  $edit_mode = FALSE;
-  if ($node->nid) {
-    $edit_mode = TRUE;
-  }
   $default_lang_options = array();
   foreach (language_list() as $lang => $info) {
     $lang_options[$lang] = t($info->name);
     $default_lang_options[$lang] = t($info->name);
   }
 
+  // Only show language options if site has not been published
+  // We need more API's to support language modifications.
+  $language_access = (!$node->status && !$translation_mode);
   $form['enabled_languages'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Select the languages you want on your site '),
-    '#description' => t('Set default language below'),
-    '#options' => $lang_options,
-    '#default_value' => $edit_mode ? $node->enabled_languages : $default_languages,
-    '#disabled' => !empty($node->conglomerate_site_id),
+    '#type'           => 'checkboxes',
+    '#title'          => t('Select the languages you want on your site '),
+    '#description'    => t('Set default language below'),
+    '#options'        => $lang_options,
+    '#default_value'  => $edit_mode ? $node->enabled_languages : $default_languages,
+    '#disabled'       => !empty($node->conglomerate_site_id),
+    '#access'         => $language_access,
   );
 
-  global $language;
   $form['default_language'] = array(
-    '#type' => 'select',
-    '#title' => t('Default language'),
-    '#description' => t('The default language for the site'),
-    '#options' => $default_lang_options,
-    '#default_value' => $edit_mode ? $node->default_language : $language->language,
-    '#disabled' => !empty($node->conglomerate_site_id),
+    '#type'           => 'select',
+    '#title'          => t('Default language'),
+    '#description'    => t('The default language for the site'),
+    '#options'        => $default_lang_options,
+    '#default_value'  => $edit_mode ? $node->default_language : $language->language,
+    '#disabled'       => !empty($node->conglomerate_site_id),
+    '#access'         => $language_access,
   );
 
-  $form['terms_of_use_text'] = array(
-    '#title' => '',
-    '#value' => l(t('Terms of Use'), 'terms', array(attributes => array('target' => '_blank'))),
-    '#prefix' => '<p>',
-    '#suffix' => '</p>',
-    '#weight' => 30,
-  );
+  // If the site already exists we don't need to show
+  // terms of agreement checkbox
+  if (!$edit_mode && !$translation_mode) {
+    $form['terms_of_use_text'] = array(
+      '#title' => '',
+      '#value' => l(t('Terms of Use'), 'terms', array(attributes => array('target' => '_blank'))),
+      '#prefix' => '<p>',
+      '#suffix' => '</p>',
+      '#weight' => 30,
+    );
 
-  $form['terms_of_use_accepted'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('I\'ve read and accepted the terms of use'),
-    '#default_value' => 0,
-    '#weight' => 31,
-  );
+    $form['terms_of_use_accepted'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('I\'ve read and accepted the terms of use'),
+      '#default_value' => 0,
+      '#weight' => 31,
+    );
+  } else {
+    $form['terms_of_use_accepted'] = array(
+      '#type' => 'hidden',
+      '#default_value' => 1,
+      '#weight' => 31,
+    );
+  }
 
-  $form['donetext'] = array(
-    '#value' => t('Use the map above to specify a position that your site relates to.<br /><br />Click Save to send your registration to us for review. You will receive an email as soon as your site is approved.'),
-    '#prefix' => '<p>',
-    '#suffix' => '</p>',
-    '#weight' => 50,
-  );
+  if (!$translation_mode) {
+    $form['donetext'] = array(
+      '#value' => t('Use the map above to specify a position that your site relates to.<br /><br />Click Save to send your registration to us for review. You will receive an email as soon as your site is approved.'),
+      '#prefix' => '<p>',
+      '#suffix' => '</p>',
+      '#weight' => 50,
+    );
+  }
 
   $form['simple_geo']['simple_geo_position']['#required'] = TRUE;
 
@@ -195,58 +244,92 @@ function conglomerate_form_site_node_form_alter($form, $form_state) {
   $form['buttons']['preview']['#access'] = FALSE;
 }
 
+/**
+ * After build function for hiding simplegeo on translation nodes
+ */
+function _conglomerate_form_site_hide_geo($form_element, &$form_state) {
+  $form_element['simple_geo']['#access'] = FALSE;
+  return $form_element;
+}
+
+/**
+ * Validate site node information
+ */
 function _conglomerate_site_register_validate($node) {
+  // Only validate new sites, old sites can't (shouldn't) be changed anyways
   if (empty($node->conglomerate_site_id)) {
-    if (empty($node->conglomerate_domain)) {
-      form_set_error('conglomerate_domain', t('You have to provide a domain'));
-    }
-
-    if (!$node->terms_of_use_accepted && !user_access('conglomerate approve site')) {
-      form_set_error('terms_of_use_accepted', t('You have to accept the terms of use to create a site at domain.com.'));
-    }
-
-    $base_domain = variable_get('conglomerate_domain', '');
-    $domain = $node->conglomerate_domain;
-    if (strpos($domain, $base_domain) !== FALSE) {
-      $domain = drupal_substr($domain, 0, drupal_strlen($domain) - drupal_strlen($base_domain) - 1);
-    }
-    if (!preg_match('/^[0-9a-z]+$/', $node->conglomerate_domain) && !(user_access('conglomerate custom subsite url') && preg_match('/^[0-9a-z\.]+$/', $node->conglomerate_domain))) {
-      form_set_error('conglomerate_domain', t('The subdomain name may only contain lowercase characters from a to z.'));
-    }
-    else {
-      if (strpos($domain, '.') === FALSE) {
-        $domain .= '.' . $base_domain;
+    // Treat translated nodes different
+    if ($node->translation_source) {
+      // Make sure that the translation has a link to the same domain but with a language suffix
+      $new_url = $node->conglomerate_domain;
+      $old_url = $node->translation_source->conglomerate_domain;
+      if (substr($new_url, 0, strlen($old_url)) !== $old_url) {
+        form_set_error('conglomerate_domain', t('Translation must link to same domain'));
       }
-      $reserved = drupal_strtolower(variable_get('conglomerate_reserved_subdomains', ''));
-      if (!empty($reserved)) {
-        $reserved = split("\n", $reserved);
-        foreach ($reserved as $r) {
-          $r .= '.' . variable_get('conglomerate_domain', '');
-          if (drupal_strtolower($r) == $domain) {
-            form_set_error('conglomerate_domain', t('The domain "!domain" is reserved and may not be registered.', array(
-              '!domain' => $domain,
-            )));
+
+      // Same domain, check. Validate the rest
+      $path = substr($new_url, strlen($old_url));
+      if (!preg_match('/\/[a-z]*/', $new_url)) {
+        form_set_error('conglomerate_domain', t('Domain does not seem to match a language version.'));
+      }
+    }
+
+    // New sites:
+    else {
+      // Validate domain
+      if (empty($node->conglomerate_domain)) {
+        form_set_error('conglomerate_domain', t('You have to provide a domain'));
+      }
+
+      $base_domain = variable_get('conglomerate_domain', '');
+      $domain = $node->conglomerate_domain;
+      if (strpos($domain, $base_domain) !== FALSE) {
+        $domain = drupal_substr($domain, 0, drupal_strlen($domain) - drupal_strlen($base_domain) - 1);
+      }
+      if (!preg_match('/^[0-9a-z]+$/', $node->conglomerate_domain) && !(user_access('conglomerate custom subsite url') && preg_match('/^[0-9a-z\.]+$/', $node->conglomerate_domain))) {
+        form_set_error('conglomerate_domain', t('The subdomain name may only contain lowercase characters from a to z.'));
+      }
+      else {
+        if (strpos($domain, '.') === FALSE) {
+          $domain .= '.' . $base_domain;
+        }
+        $reserved = drupal_strtolower(variable_get('conglomerate_reserved_subdomains', ''));
+        if (!empty($reserved)) {
+          $reserved = split("\n", $reserved);
+          foreach ($reserved as $r) {
+            $r .= '.' . variable_get('conglomerate_domain', '');
+            if (drupal_strtolower($r) == $domain) {
+              form_set_error('conglomerate_domain', t('The domain "!domain" is reserved and may not be registered.', array(
+                '!domain' => $domain,
+              )));
+            }
           }
+        }
+
+        // Check that the subdomain hasn't been taken
+        $exists = db_result(db_query("SELECT domain FROM {conglomerate_source} WHERE domain = '%s' AND nid != %d", array(
+          ':domain' => $domain,
+          ':nid' => $node->nid,
+        )));
+        if (!empty($exists)) {
+          form_set_error('conglomerate_domain', t('The domain "!domain" has already been registered.', array(
+            '!domain' => $domain,
+          )));
         }
       }
 
-      // Check that the subdomain hasn't been taken
-      $exists = db_result(db_query("SELECT domain FROM {conglomerate_source} WHERE domain = '%s' AND nid != %d", array(
-        ':domain' => $domain,
-        ':nid' => $node->nid,
-      )));
-      if (!empty($exists)) {
-        form_set_error('conglomerate_domain', t('The domain "!domain" has already been registered.', array(
-          '!domain' => $domain,
+      // Accept terms?
+      if (!$node->terms_of_use_accepted && !user_access('conglomerate approve site')) {
+        form_set_error('terms_of_use_accepted', t('You have to accept the terms of use to create a site at domain.com.'));
+      }
+
+      // Make sure default language is enabled?
+      $languages = language_list();
+      if (!$node->enabled_languages[$node->default_language]) {
+        form_set_error('enabled_languages', t('You must enable !language if you want to use it as you site\'s default language.', array(
+          '!language' => $languages[$node->default_language]->native,
         )));
       }
-    }
-
-    $languages = language_list();
-    if (!$node->enabled_languages[$node->default_language]) {
-      form_set_error('enabled_languages', t('You must enable !language if you want to use it as you site\'s default language.', array(
-        '!language' => $languages[$node->default_language]->native,
-      )));
     }
   }
 }
@@ -551,10 +634,12 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
           }
           $node->conglomerate_domain = $domain;
 
-          if ($node->status) {
+          // Create OAuth tokens 'n stuff for new sites
+          if ($node->status && !$node->translation_source) {
             require_once('includes/site.inc');
             $node->conglomerate_site_id = _conglomerate_site_register_submit($node);
           }
+
           // Save the source record for the site
           $record = array();
           if ($node->nid) {
