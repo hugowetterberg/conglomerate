@@ -670,6 +670,9 @@ function conglomerate_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
             $record['config'] = $config;
           }
 
+          // Update site nodes language to match default language
+          $node->language = $node->default_language;
+
           drupal_write_record('conglomerate_source', $record, $update);
         }
         break;
