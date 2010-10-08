@@ -148,7 +148,7 @@ function conglomerate_form_site_node_form_alter(&$form, $form_state) {
     '#description' => $custom_domain ? t('The domain for your site') : t('Ie. yourname.' . variable_get('conglomerate_domain', 'domain.com') . '. Max 20 charactes, only a-z and 0-9.'),
     '#default_value' => $domain,
     '#size' => 20,
-    '#maxlength' => 30,
+    '#maxlength' => !$translation_mode ? 30 : 40, // Should be sufficient to allow /language suffix
     '#field_suffix' => $custom_domain ? '' : '.' . $base_domain,
     '#disabled' => !empty($node->conglomerate_site_id) || ($custom_domain && !user_access('conglomerate custom subsite url')),
   );
