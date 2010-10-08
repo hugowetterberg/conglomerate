@@ -40,15 +40,17 @@ class ConglomerateContentResource {
    * @Access(callback='ConglomerateContentResource::access', args={'create'}, appendArgs=true)
    */
   public static function create($data) {
-    global $user, $language;
-    $node = (object)array(
-      'created' => time(),
-      'changed' => time(),
-      'uid' => $user->uid,
-      'taxonomy' => array(),
-      'language' => $language->language,
-    );
-    return self::nodeWrite($node, $data);
+    if($data->searchable != 'hidden') {
+      global $user, $language;
+      $node = (object)array(
+        'created' => time(),
+        'changed' => time(),
+        'uid' => $user->uid,
+        'taxonomy' => array(),
+        'language' => $language->language,
+      );
+      return self::nodeWrite($node, $data);
+    }
   }
 
   /**
@@ -78,9 +80,13 @@ class ConglomerateContentResource {
    * @Access(callback='ConglomerateContentResource::access', args={'update'}, appendArgs=true)
    */
   public static function update($nid, $data) {
-    $node = node_load($nid);
-    $node->changed = time();
-    return self::nodeWrite($node, $data);
+    if($data->searchable == 'hidden') {
+      node_delete($nid);
+    } else {
+      $node = node_load($nid);
+      $node->changed = time();
+      return self::nodeWrite($node, $data);
+    }
   }
 
   /**
@@ -208,6 +214,12 @@ class ConglomerateContentResource {
           'required' => TRUE,
         );
         break;
+			case 'subpage':
+				$attr['searchable'] = array(
+					'adapt' =>'adaptSearchable',
+					'required' => TRUE,
+				);
+				break;
     }
     drupal_alter('conglomerate_node_write_attributes', $attr, $data, $source);
 
@@ -329,5 +341,12 @@ class ConglomerateContentResource {
       $node = $args[0];
     }
     return node_access($op, $node);
+  }
+
+	public static function adaptSearchable(&$node) {
+    $node->field_searchable = array(array(
+      'value' => $node->searchable,
+    ));
+    unset($node->searchable);
   }
 }
