@@ -51,6 +51,7 @@ function conglomerate_schema() {
       'sid' => array('nid'),
     ),
     'primary key' => array('nid'),
+    'indexes' => array('sid' => array('sid')),
   );
 
   $schema['conglomerate_node_source'] = array(
@@ -85,8 +86,9 @@ function conglomerate_schema() {
       ),
     ),
     'primary key' => array('nid'),
-    'index' => array(
+    'indexes' => array(
       'duplicate_of' => array('duplicate_of'),
+      'sid'          => array('sid'),
     ),
   );
 
@@ -182,6 +184,15 @@ function conglomerate_update_6003() {
     'not null'    => TRUE,
     'serialize'   => TRUE,
   ));
+
+  return $ret;
+}
+
+function conglomerate_update_6004() {
+  $ret = array();
+
+  db_add_index($ret, 'conglomerate_source', 'sid', array('sid'));
+  db_add_index($ret, 'conglomerate_node_source', 'sid', array('sid'));
 
   return $ret;
 }
