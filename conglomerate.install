@@ -193,6 +193,7 @@ function conglomerate_update_6004() {
 
   db_add_index($ret, 'conglomerate_source', 'sid', array('sid'));
   db_add_index($ret, 'conglomerate_node_source', 'sid', array('sid'));
+  db_add_index($ret, 'conglomerate_node_source', 'duplicate_of', array('duplicate_of'));
 
   return $ret;
 }
