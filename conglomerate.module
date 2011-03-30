@@ -83,7 +83,7 @@ function conglomerate_menu() {
  * Implementation of hook_node_form_alter().
  */
 function conglomerate_form_site_node_form_alter(&$form, $form_state) {
-  global $language;
+  global $language, $user;
   $base_domain = variable_get('conglomerate_domain', '');
   $node = $form['#node'];
 
@@ -180,7 +180,7 @@ function conglomerate_form_site_node_form_alter(&$form, $form_state) {
 
   // Only show language options if site has not been published
   // We need more API's to support language modifications.
-  $language_access = (!$node->status && !$translation_mode);
+  $language_access = (!$node->status && !$translation_mode && $user->uid != 1);
   $form['enabled_languages'] = array(
     '#type'           => 'checkboxes',
     '#title'          => t('Select the languages you want on your site '),
