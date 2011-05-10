@@ -746,8 +746,8 @@ function conglomerate_source_from_consumer($consumer) {
  */
 function conglomerate_apachesolr_update_index(&$doc, $node) {
   if (isset($node->conglomerate_source)) {
-    $doc->addField('is_conglomerate_source', $node->conglomerate_source);
-    $doc->addField('is_conglomerate_duplicate_of', $node->conglomerate_duplicate_of);
+    $doc->setField('is_conglomerate_source', $node->conglomerate_source);
+    $doc->setField('is_conglomerate_duplicate_of', $node->conglomerate_duplicate_of);
   }
 }
 
