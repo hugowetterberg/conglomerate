@@ -253,7 +253,7 @@ class ConglomerateContentResource {
     );
   }
 
-  public static function adaptUrl(&$node) {
+  public static function adaptUrl($node) {
     $node->field_page_url = array(array(
       'url' => $node->url,
     ));
@@ -263,7 +263,7 @@ class ConglomerateContentResource {
   /**
    * Adapt tag information to the expected taxonomy format.
    */
-  public static function adaptTags(&$node) {
+  public static function adaptTags($node) {
     $tag_vid = variable_get('conglomerate_tag_vid', 1);
     if ($tag_vid && !empty($node->taxonomy)) {
       $remove = array();
@@ -286,7 +286,7 @@ class ConglomerateContentResource {
   /**
    * Format the start date so that it's understood by CCK.
    */
-  public static function adaptStartTime(&$node) {
+  public static function adaptStartTime($node) {
     $starts = $node->starts;
     unset($node->starts);
 
@@ -296,8 +296,9 @@ class ConglomerateContentResource {
 
     $node->field_starts = array();
     foreach ($starts as $time) {
+      error_log(gmdate('c', $time));
       $node->field_starts[] = array(
-        'value' => date('c', $time),
+        'value' => gmdate('c', $time),
       );
     }
   }
@@ -305,7 +306,7 @@ class ConglomerateContentResource {
   /**
    * Format the full-text field so that it's understood by CCK.
    */
-  public static function adaptFulltext(&$node) {
+  public static function adaptFulltext($node) {
     $node->field_fulltext = array(array(
       'value' => $node->fulltext,
     ));
@@ -315,7 +316,7 @@ class ConglomerateContentResource {
   /**
    * Format the picture url so that it's understood by CCK.
    */
-  public static function adaptPicture(&$node) {
+  public static function adaptPicture($node) {
     $node->field_image_url = array(array(
       'url' => $node->picture,
     ));
@@ -325,7 +326,7 @@ class ConglomerateContentResource {
   /**
    * Format the picture url so that it's understood by CCK.
    */
-  public static function adaptLargePicture(&$node) {
+  public static function adaptLargePicture($node) {
     $node->field_large_image_url = array(array(
       'url' => $node->large_picture,
     ));
@@ -343,7 +344,7 @@ class ConglomerateContentResource {
     return node_access($op, $node);
   }
 
-	public static function adaptSearchable(&$node) {
+	public static function adaptSearchable($node) {
     $node->field_searchable = array(array(
       'value' => $node->searchable,
     ));
