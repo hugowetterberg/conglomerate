@@ -197,3 +197,11 @@ function conglomerate_update_6004() {
 
   return $ret;
 }
+
+function conglomerate_update_6005() {
+  $ret = array();
+
+  db_add_column($ret, 'conglomerate_source', 'migrated', 'boolean', array('not null' => "TRUE", 'default' => "FALSE"));
+
+  return $ret;
+}
