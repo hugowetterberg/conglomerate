@@ -55,10 +55,9 @@ function conglomerate_schema() {
     ),
     'unique keys' => array(
       'oauth_consumer' => array('oauth_consumer'),
-      'nid' => array('nid'),
+      'sid' => array('sid'),
     ),
     'primary key' => array('nid'),
-    'indexes' => array('sid' => array('sid')),
   );
 
   $schema['conglomerate_node_source'] = array(
