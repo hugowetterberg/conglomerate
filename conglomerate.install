@@ -45,10 +45,17 @@ function conglomerate_schema() {
         'not null'    => TRUE,
         'serialize'   => TRUE,
       ),
+      'migrated' => array(
+        'description' => t('Track migrated sites'),
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0,
+      ),
     ),
     'unique keys' => array(
       'oauth_consumer' => array('oauth_consumer'),
-      'sid' => array('nid'),
+      'nid' => array('nid'),
     ),
     'primary key' => array('nid'),
     'indexes' => array('sid' => array('sid')),
@@ -201,7 +208,7 @@ function conglomerate_update_6004() {
 function conglomerate_update_6005() {
   $ret = array();
 
-  db_add_column($ret, 'conglomerate_source', 'migrated', 'boolean', array('not null' => "TRUE", 'default' => "FALSE"));
+  db_add_field($ret, 'conglomerate_source', 'migrated', array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
 
   return $ret;
 }
