@@ -243,10 +243,16 @@ class ConglomerateContentResource {
 
     // Add information about the conglomerate source
     $node->conglomerate_source = $source->sid;
-    watchdog('conglomerate', 'Saving a pushed node: @node', array(
-      '@node' => json_encode($node),
-    ), WATCHDOG_NOTICE);
+    $the_language = $node->language;
     node_save($node);
+
+    // Workaround to preserve language. TODO: Must find out what is happening to the language.
+    if (!$node->language) {
+      db_query("UPDATE {node} SET language='%s' WHERE nid = %d", array(
+        ':language' => $the_language,
+        ':nid' => $node->nid,
+      ));
+    }
 
     return (object)array(
       'nid' => $node->nid,
