@@ -243,7 +243,9 @@ class ConglomerateContentResource {
 
     // Add information about the conglomerate source
     $node->conglomerate_source = $source->sid;
-
+    watchdog('conglomerate', 'Saving a pushed node: @node', array(
+      '@node' => json_encode($node),
+    ), WATCHDOG_NOTICE);
     node_save($node);
 
     return (object)array(
