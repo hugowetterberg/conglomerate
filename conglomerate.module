@@ -575,6 +575,23 @@ function _conglomerate_rolesort($a, $b) {
     return ($roles[$a->role] > $roles[$b->role]) ? 1 : -1;
 }
 
+/**
+ * Gets client version information for a specific module.
+ *
+ * @param object $node
+ * @param string $module
+ * @return int|bool
+ *  Returns the version number or FALSE if no version information is avalable.
+ */
+function conglomerate_client_version($node, $module) {
+  $version = FALSE;
+  $m = $node->conglomerate_metadata;
+  if (!empty($m['client_versions']) && !empty($m['client_versions'][$module])) {
+    $version = $m['client_versions'][$module];
+  }
+  return $version;
+}
+
 function conglomerate_node_information($nid, $prefix = TRUE) {
   $info = db_fetch_object(db_query("SELECT sid, duplicate_of, metadata FROM {conglomerate_node_source}
     WHERE nid = %d",
